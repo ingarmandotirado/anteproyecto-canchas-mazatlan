@@ -190,9 +190,9 @@ dialog::backdrop{background:rgba(20,18,14,.45)}
         <option value="15">15 s</option><option value="30" selected>30 s</option><option value="60">60 s</option><option value="90">90 s</option>
       </select>
     </div>
-    <div class="row grow">
+    <div class="row grow" hidden>
       <label for="selPause" style="flex:0 0 auto">Pausa en cada etapa</label>
-      <select id="selPause"><option value="0">0 s</option><option value="1">1 s</option><option value="2" selected>2 s</option><option value="3">3 s</option><option value="5">5 s</option></select>
+      <select id="selPause"><option value="0" selected>0 s</option></select>
     </div>
     <div class="row">
       <button id="btnExpPts" class="ghost">Exportar JSON</button>
@@ -262,8 +262,8 @@ dialog::backdrop{background:rgba(20,18,14,.45)}
         <label class="check" style="margin:0"><input type="checkbox" id="expOverlay" checked> Sobreimprimir título y etapa</label>
         <span></span>
         <label class="check" style="margin:0"><input type="checkbox" id="expDetail"> … con detalle de la etapa</label>
-        <label for="expPause">Pausa por etapa</label>
-        <select id="expPause"><option value="0">0 s</option><option value="1">1 s</option><option value="2" selected>2 s</option><option value="3">3 s</option><option value="5">5 s</option></select>
+        <label for="expPause" hidden>Pausa por etapa</label>
+        <select id="expPause" hidden><option value="0" selected>0 s</option></select>
         <span>Duración total</span><strong id="expTotal">—</strong>
       </div>
       <div id="expSupport" class="hint"></div>
