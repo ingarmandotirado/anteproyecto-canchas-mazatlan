@@ -53,6 +53,26 @@ label{font-size:13px}
 .stage-box .num{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:600}
 .stage-box .name{font-size:20px;font-weight:800;letter-spacing:-.01em}
 .stage-box .sub{font-size:13px;color:var(--ink-2);margin-top:2px;min-height:1.2em}
+.stage-box .pin{margin-left:auto;padding:4px 9px;font-size:11.5px;border-radius:999px}
+.stage-box .pin.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.stage-box .detail{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;line-height:1.45;max-height:34vh;overflow:auto}
+.stage-box .detail .proc{margin:0 0 6px;padding-left:16px}
+.stage-box .detail .cant{display:flex;flex-wrap:wrap;gap:5px}
+.stage-box .detail .cant span{background:var(--accent-soft);color:var(--accent);border-radius:7px;padding:2px 7px;font-weight:700;font-size:11.5px}
+.stage-box.pinned{max-width:min(520px,calc(100vw - 28px))}
+.stlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.stlist li{border:1px solid var(--line);border-radius:9px;padding:6px 8px;cursor:pointer;background:var(--card-solid)}
+.stlist li:hover{border-color:var(--accent)}
+.stlist li.cur{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.stlist .top{display:flex;gap:6px;align-items:baseline}
+.stlist .nn{font-weight:800;font-size:11.5px;color:var(--ink-2);min-width:20px}
+.stlist .tt{font-weight:700;font-size:13px;flex:1}
+.stlist .bd{font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.stlist .bd.e2{background:rgba(168,96,58,.14);color:var(--e2)} .stlist .bd.ef{background:rgba(45,95,142,.14);color:#2d5f8e}
+.stlist .ds{font-size:11.5px;color:var(--ink-2);margin:2px 0 0 26px}
+.stlist ul{list-style:none;margin:4px 0 0 22px;padding:0;display:flex;flex-direction:column;gap:2px}
+.stlist ul li{padding:3px 7px;font-size:12px}
+.navbtn{width:34px;height:34px;border-radius:50%;padding:0;flex:0 0 auto;font-size:16px}
 .stage-box.swap .name,.stage-box.swap .chips{animation:swap .45s ease}
 @keyframes swap{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .panel{position:fixed;top:78px;right:14px;width:330px;max-height:calc(100vh - 200px);display:flex;flex-direction:column;overflow:hidden}
@@ -138,14 +158,16 @@ dialog::backdrop{background:rgba(20,18,14,.45)}
 </div>
 
 <section id="stageBox" class="stage-box card" aria-live="polite">
-  <div class="chips"><span id="stEtapa" class="chip">Etapa 1</span><span id="stNum" class="num">01 / 18</span></div>
+  <div class="chips"><span id="stEtapa" class="chip">Etapa 1</span><span id="stNum" class="num">01 / 18</span><button id="btnPin" class="pin" title="Fijar la tarjeta con el detalle de la etapa" aria-pressed="false">📌 Fijar</button></div>
   <div id="stName" class="name">Terreno con monte</div>
   <div id="stSub" class="sub"></div>
+  <div id="stDetail" class="detail" hidden></div>
 </section>
 
 <aside id="panel" class="panel card">
   <div class="tabs" role="tablist">
     <button data-tab="cam" class="on">Cámara</button>
+    <button data-tab="etapas">Etapas</button>
     <button data-tab="vista">Vista</button>
   </div>
   <div class="tabbody" id="tab-cam">
@@ -168,6 +190,10 @@ dialog::backdrop{background:rgba(20,18,14,.45)}
         <option value="15">15 s</option><option value="30" selected>30 s</option><option value="60">60 s</option><option value="90">90 s</option>
       </select>
     </div>
+    <div class="row grow">
+      <label for="selPause" style="flex:0 0 auto">Pausa en cada etapa</label>
+      <select id="selPause"><option value="0">0 s</option><option value="1">1 s</option><option value="2" selected>2 s</option><option value="3">3 s</option><option value="5">5 s</option></select>
+    </div>
     <div class="row">
       <button id="btnExpPts" class="ghost">Exportar JSON</button>
       <button id="btnImpPts" class="ghost">Importar JSON</button>
@@ -175,6 +201,10 @@ dialog::backdrop{background:rgba(20,18,14,.45)}
       <input type="file" id="fileImp" accept="application/json,.json" hidden>
     </div>
     <p class="hint">Sin puntos, la reproducción usa un recorrido orbital por defecto.</p>
+  </div>
+  <div class="tabbody hidden" id="tab-etapas">
+    <div class="row"><button id="btnPrevSt" class="ghost">◀ Anterior</button><button id="btnNextSt" class="ghost">Siguiente ▶</button><span class="hint" style="margin:0">También con ← →</span></div>
+    <ol id="stList" class="stlist"></ol>
   </div>
   <div class="tabbody hidden" id="tab-vista">
     <h3>Vistas rápidas</h3>
@@ -198,7 +228,9 @@ dialog::backdrop{background:rgba(20,18,14,.45)}
 </aside>
 
 <footer class="timeline card">
+  <button id="btnPrev2" class="navbtn ghost" title="Etapa anterior (←)" aria-label="Etapa anterior">‹</button>
   <button id="btnPlay" class="play" title="Reproducir" aria-label="Reproducir">▶</button>
+  <button id="btnNext2" class="navbtn ghost" title="Etapa siguiente (→)" aria-label="Etapa siguiente">›</button>
   <div class="track">
     <div class="ticks" id="ticks"></div>
     <input type="range" id="slider" min="0" max="10000" step="1" value="0" aria-label="Tiempo del timelapse">
@@ -228,6 +260,11 @@ dialog::backdrop{background:rgba(20,18,14,.45)}
         <select id="expFps"><option value="30" selected>30 fps</option><option value="24">24 fps</option><option value="60">60 fps</option></select>
         <span></span>
         <label class="check" style="margin:0"><input type="checkbox" id="expOverlay" checked> Sobreimprimir título y etapa</label>
+        <span></span>
+        <label class="check" style="margin:0"><input type="checkbox" id="expDetail"> … con detalle de la etapa</label>
+        <label for="expPause">Pausa por etapa</label>
+        <select id="expPause"><option value="0">0 s</option><option value="1">1 s</option><option value="2" selected>2 s</option><option value="3">3 s</option><option value="5">5 s</option></select>
+        <span>Duración total</span><strong id="expTotal">—</strong>
       </div>
       <div id="expSupport" class="hint"></div>
       <div class="actions"><button id="expCancel1" class="ghost">Cerrar</button><button id="expGo" class="primary">Exportar</button></div>
@@ -1737,6 +1774,52 @@ function camAt(t){
 function setCam(c){ camera.position.copy(c.pos); controls.target.copy(c.target); camera.lookAt(c.target); }
 
 /* ---------------- UI ---------------- */
+/* ---------------- detalle de etapas (cantidades de cantidades.json, embebidas) ---------------- */
+const DETAIL = {
+  monte:     { proc:['Lote de 3,418.5 m² con monte y matorral, sin agua, drenaje ni luz.', 'Terreno sensiblemente plano; suelo limoso no expansivo.'], cant:['Área del lote 3,418.5 m²'] },
+  desmonte:  { proc:['Roza, tala de arbustos y desenraice sin quema, a mano y con equipo.', 'El producto se acopia y se retira en camión de volteo.'], cant:['Desmonte y limpieza 3,418.5 m²'] },
+  trazo:     { proc:['Trazo y nivelación con estación total y nivel, con bancos de referencia.', 'Ejes de canchas, plaza, contenedores y barda con calhidra y estacas.'], cant:['Trazo y nivelación 3,418.5 m²', 'Eje de barda 237.74 ml'] },
+  despalme:  { proc:['Retiro de 0.20 m de capa orgánica con equipo mecánico.', 'Carga a volteo y acarreo a tiro autorizado (abundamiento 1.30).'], cant:['Despalme 683.7 m³ · retiro con volteo', 'Carga y acarreo 1,052.65 m³'] },
+  terraplen: { proc:['Escarificado y compactación del terreno natural al 90 % Proctor.', 'Terraplén de material de banco en capas de 0.20 m compactadas al 95 %.'], cant:['Terraplén 575.75 m³', 'Material de banco en obra 834.88 m³'] },
+  base:      { proc:['Base hidráulica de grava-arena de 1½" a finos, 0.15 m compactada al 100 %.', 'Canchas 1 y 2; la cancha 3 se construye en la Etapa 2.'], cant:['Base hidráulica 275.05 m³', 'Suministro suelto 357.57 m³'] },
+  barda:     { proc:['Cepa, plantilla y cimiento corrido de 0.40 × 0.20 m con armex.', 'Muro de block 15×20×40 de 0.80 m con castillos ahogados y dala de cerramiento.', 'Block aparente sellado al exterior; aplanado y pintura al interior.'], cant:['Muro de block 300.06 m²', 'Cimiento corrido 19.02 m³', 'Eje de barda 237.74 ml'] },
+  drenes:    { proc:['Zanja con geotextil, grava de ¾"–1½" y tubo PVC perforado de 6".', 'Dren principal en el pasillo C2|C1 hacia pozo de absorción de 1.20 × 3.00 m.', 'Ductos PVC de 2" con registros para alumbrado futuro.'], cant:['Grava filtrante 20.86 m³', 'Tubo perforado 35.82 ml', 'Ducto de alumbrado 207.95 ml · 11 registros'] },
+  armado:    { proc:['Polietileno cal. 600 como barrera de vapor.', 'Malla electrosoldada 6x6-6/6 sobre silletas a medio peralte.'], cant:['Polietileno y malla 1,337.73 m²'] },
+  colado:    { proc:['Losa f′c 250 de 12 cm con fibra de polipropileno.', 'Colado continuo por cancha con bomba, regla vibratoria y láser; la pendiente se da en la losa.', 'Juntas de control cortadas con disco a ¼ del espesor.'], cant:['Losa 160.53 m³ · ~80 m³ por cancha', 'Fibra 96.32 kg', 'Juntas de control 182.88 ml'] },
+  curado:    { proc:['Curado húmedo continuo de 28 días con riego y arpillera saturada.'], cant:['Curado 1,337.73 m²'] },
+  acrilico:  { proc:['Lavado a presión y resanes.', 'Cushion (2–3 capas), resurfacer (2), color en 2 tonos (2) y líneas oficiales ITF.'], cant:['Sistema acrílico 1,337.73 m² por capa', 'Color: juego 521.51 m² · perímetro 816.22 m²', 'Líneas 292.96 ml'] },
+  malla:     { proc:['Postes galvanizados de 2" y 2½" sobre barda y en dados de las rejas.', 'Malla ciclónica plastificada verde cal. 11 con barra superior.', 'Portón de dos hojas y 4 puertas peatonales de 1.20 × 2.10.'], cant:['Malla perimetral 508.3 m² (tramo alto)', 'Reja norte 200.17 m² · reja oriente 129.64 m²', 'Barra superior 237.74 ml'] },
+  contenedores: { proc:['2 HC 40′ "de un viaje" sobre dados con placa; unión soldada por el lado largo.', 'Retiro de muros comunes, recorte del cancel corredizo de 4.50 × 2.40 y ventana de barra.', 'Baños H/M (3 WC, 1 mingitorio, 3 lavabos) y barra de cocina con tarja.'], cant:['2 contenedores · maniobra con grúa', 'Aislamiento y recubrimiento 123.01 m²', 'Barra de cocina 4.8 ml'] },
+  terraza:   { proc:['Base re-compactada, geotextil y gravilla de sello de 3/8" con bordillo.', 'Plancha de gimnasio f′c 200 de 12 cm y 6 aparatos.', 'Bancas de concreto, jardineras y mesas con sombrilla.'], cant:['Gravilla de sello 517.7 m² (41.42 m³)', 'Bordillo 119.28 ml', 'Plancha de gimnasio 81.8 m²'] },
+  grava:     { proc:['Afine y compactación al 95 % PVSM.', 'Revestimiento de grava triturada de ¾" con finos; cajones trazados con estacas.'], cant:['Grava 298.36 m² (29.84 m³)', '18 cajones de 2.55 × 5.00'] },
+  red:       { proc:['Dados para manga, postes galvanizados con malacate y red de competencia.', 'Bancas de doble vista con techo en el pasillo C2|C1.'], cant:['Postes de red 2 jgo · redes 2 pza'] },
+  e2base:    { proc:['Trazo y nivelación sobre la plataforma de la Etapa 1.', 'Base hidráulica de 0.15 m compactada al 100 %.'], cant:['Base hidráulica 100.33 m³'] },
+  e2dren:    { proc:['Dren francés con tubo perforado de 4" en el pasillo C3|C2 y pozo de absorción.'], cant:['Grava filtrante 16.91 m³', 'Tubo perforado 35.82 ml'] },
+  e2armado:  { proc:['Polietileno cal. 600 y malla 6x6-6/6 sobre silletas.'], cant:['Polietileno y malla 668.87 m²'] },
+  e2colado:  { proc:['Losa f′c 250 de 12 cm con fibra, colado continuo con bomba.'], cant:['Losa 80.26 m³', 'Juntas de control 91.44 ml'] },
+  e2curado:  { proc:['Curado húmedo de 28 días.'], cant:['Curado 668.87 m²'] },
+  e2acril:   { proc:['Cushion, resurfacer, color en 2 tonos y líneas.'], cant:['Sistema acrílico 668.87 m² por capa', 'Líneas 146.48 ml'] },
+  e2red:     { proc:['Postes con malacate, red y banca de doble vista en el pasillo C3|C2.'], cant:['Postes 1 jgo · red 1 pza'] },
+  fin:       { proc:['3 canchas con sistema acrílico, plaza de gravilla, cafetería y baños, gimnasio y estacionamiento.', 'Limpieza final de obra.'], cant:['Limpieza final 3,418.5 m²'] },
+  vida:      { proc:['Canchas en uso, gimnasio exterior, cafetería con terraza y plaza.', 'Terraza en proyecto sobre los contenedores.'], cant:['3 canchas · 6 aparatos · 18 cajones'] }
+};
+const CONT_SUB = [['Dados de concreto', .08], ['Llegada de los contenedores', .34], ['Unión por el lado largo', .42], ['Recortes y cancel corredizo', .52], ['Muros de baños', .62], ['Muebles de baño', .72], ['Barra de cocina', .84], ['Puertas y acabados', .92], ['Escalera y terraza en proyecto', 1]];
+/* mapa de tiempo de reproducción → t con mesetas (pausa al terminar cada etapa y cada subpaso de contenedores) */
+function playPlan(D, P){
+  const bks = []; STAGES.forEach(st => { if (st.id === 'contenedores') CONT_SUB.slice(0, -1).forEach(([, f]) => bks.push({ t:st.t0 + f * (st.t1 - st.t0), pause:P / 2 })); bks.push({ t:st.t1, pause:P }); });
+  bks.sort((a, b) => a.t - b.t); const segs = []; let tp = 0, tau = 0;
+  bks.forEach(b => { const mv = (b.t - tp) * D; segs.push({ t0:tp, t1:b.t, a:tau, b:tau + mv, c:tau + mv + b.pause }); tau += mv + b.pause; tp = b.t; });
+  return { segs, total:tau };
+}
+function sceneAt(plan, tau){ const sg = plan.segs.find(x => tau <= x.c) || plan.segs[plan.segs.length - 1];
+  const t = tau < sg.b ? lerp(sg.t0, sg.t1, clamp01((tau - sg.a) / Math.max(1e-9, sg.b - sg.a))) : sg.t1;
+  const tc = lerp(sg.t0, sg.t1, clamp01((tau - sg.a) / Math.max(1e-9, sg.c - sg.a)));     // la cámara sigue avanzando durante la pausa
+  return { t:clamp01(t), tc:clamp01(tc) }; }
+function tauOf(plan, t){ const sg = plan.segs.find(x => t <= x.t1 + 1e-9) || plan.segs[plan.segs.length - 1]; return lerp(sg.a, sg.b, clamp01((t - sg.t0) / Math.max(1e-9, sg.t1 - sg.t0))); }
+let pinned = false; try { pinned = localStorage.getItem('canchas-visor-fijar') === '1'; } catch (e) {}
+function renderDetail(id){ const d = DETAIL[id], el = $('stDetail'); if (!d){ el.innerHTML = ''; return; }
+  el.innerHTML = '<ul class="proc">' + d.proc.map(x => `<li>${x}</li>`).join('') + '</ul><div class="cant">' + d.cant.map(x => `<span>${x}</span>`).join('') + '</div>'; }
+
 const $ = id => document.getElementById(id);
 const slider = $('slider'), btnPlay = $('btnPlay'), tLabel = $('tLabel');
 let tCur = 0, playing = false, exporting = false, lastStage = null, dirty = true;
@@ -1749,8 +1832,9 @@ function setT(t, fromSlider = false){
   if (lastStage !== info.s.id){ const box = $('stageBox'); box.classList.remove('swap'); void box.offsetWidth; box.classList.add('swap'); lastStage = info.s.id; }
   const ch = $('stEtapa'); ch.textContent = info.etapa; ch.classList.toggle('e2', info.s.et === 2);
   $('stNum').textContent = 'Paso ' + info.num; $('stName').textContent = info.name; $('stSub').textContent = info.sub;
+  if (setT._last !== info.s.id){ setT._last = info.s.id; if (pinned) renderDetail(info.s.id); document.querySelectorAll('#stList > li').forEach(li => li.classList.toggle('cur', li.dataset.id === info.s.id)); }
 }
-slider.addEventListener('input', () => { setT(slider.value / 10000, true); });
+slider.addEventListener('input', () => { setT(slider.value / 10000, true); if (playing && playPl) tau = tauOf(playPl, tCur); });
 function buildTicks(){
   const tk = $('ticks'); tk.innerHTML = '';
   STAGES.forEach(s => { if (s.t0 > 0){ const d = document.createElement('div'); d.className = 'tick'; d.style.left = (s.t0 * 100) + '%'; d.title = s.name; tk.appendChild(d); } });
@@ -1758,8 +1842,22 @@ function buildTicks(){
   camPts.forEach(p => { const d = document.createElement('div'); d.className = 'cpt'; d.style.left = (p.t * 100) + '%'; tk.appendChild(d); });
 }
 function setPlaying(v){ playing = v; btnPlay.textContent = v ? '⏸' : '▶'; btnPlay.title = v ? 'Pausar' : 'Reproducir'; btnPlay.setAttribute('aria-label', btnPlay.title); controls.enabled = !(v && autoCam); }
-btnPlay.addEventListener('click', () => { if (!playing && tCur >= 1) setT(0); setPlaying(!playing); });
-window.addEventListener('keydown', e => { if (e.code === 'Space' && !['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)){ e.preventDefault(); btnPlay.click(); } });
+let playPl = null, tau = 0;
+btnPlay.addEventListener('click', () => { if (!playing && tCur >= 1) setT(0); if (!playing){ playPl = playPlan(parseFloat($('selDur').value) || 30, parseFloat($('selPause').value) || 0); tau = tauOf(playPl, tCur); } setPlaying(!playing); });
+const ENDS = STAGES.map(st => st.t1 - 1e-4);
+function goStage(dir){ setPlaying(false); const t = dir > 0 ? (ENDS.find(e => e > tCur + 1e-3) ?? ENDS[ENDS.length - 1]) : ([...ENDS].reverse().find(e => e < tCur - 1e-3) ?? 0); setT(t); }
+['btnPrevSt', 'btnPrev2'].forEach(id => $(id).addEventListener('click', () => goStage(-1))); ['btnNextSt', 'btnNext2'].forEach(id => $(id).addEventListener('click', () => goStage(1)));
+$('btnPin').addEventListener('click', () => { pinned = !pinned; try { localStorage.setItem('canchas-visor-fijar', pinned ? '1' : '0'); } catch (e) {} applyPin(); });
+function applyPin(){ const b = $('btnPin'); b.classList.toggle('on', pinned); b.setAttribute('aria-pressed', String(pinned)); b.textContent = pinned ? '📌 Fijada' : '📌 Fijar'; $('stDetail').hidden = !pinned; $('stageBox').classList.toggle('pinned', pinned); if (pinned) renderDetail(stageAt(tCur).id); }
+function buildStageList(){ const ol = $('stList'); ol.innerHTML = '';
+  STAGES.forEach(st => { const li = document.createElement('li'); li.dataset.id = st.id; const bd = st.et === 1 ? ['E1', ''] : st.et === 2 ? ['E2', 'e2'] : st.et === 3 ? ['En funciones', 'ef'] : ['E1+E2', ''];
+    const ds = typeof st.sub === 'function' ? (DETAIL[st.id] ? DETAIL[st.id].proc[0] : '') : st.sub;
+    li.innerHTML = `<div class="top"><span class="nn">${String(st.n).padStart(2, '0')}</span><span class="tt">${st.name}</span><span class="bd ${bd[1]}">${bd[0]}</span></div><div class="ds">${ds}</div>`;
+    li.addEventListener('click', e => { if (e.target.closest('ul')) return; setPlaying(false); setT(st.t1 - 1e-4); });
+    if (st.id === 'contenedores'){ const ul = document.createElement('ul'); CONT_SUB.forEach(([nm, f]) => { const sl = document.createElement('li'); sl.textContent = nm; sl.addEventListener('click', e => { e.stopPropagation(); setPlaying(false); setT(st.t0 + f * (st.t1 - st.t0) - 1e-4); }); ul.appendChild(sl); }); li.appendChild(ul); }
+    ol.appendChild(li); }); }
+window.addEventListener('keydown', e => { const tag = document.activeElement.tagName; if (['INPUT', 'SELECT', 'TEXTAREA'].includes(tag)) return;
+  if (e.code === 'Space' && tag !== 'BUTTON'){ e.preventDefault(); btnPlay.click(); } else if (e.code === 'ArrowRight'){ e.preventDefault(); goStage(1); } else if (e.code === 'ArrowLeft'){ e.preventDefault(); goStage(-1); } });
 
 // panel y pestañas
 const panel = $('panel');
@@ -1855,7 +1953,7 @@ function loop(now){
   step(dt);
 }
 function step(dt){
-  if (playing){ const dur = parseFloat($('selDur').value) || 30; let t = tCur + dt / dur; if (t >= 1){ t = 1; setPlaying(false); } setT(t); if (autoCam) setCam(camAt(tCur)); }
+  if (playing){ if (!playPl) playPl = playPlan(parseFloat($('selDur').value) || 30, parseFloat($('selPause').value) || 0); tau += dt; const r = sceneAt(playPl, Math.min(tau, playPl.total)); setT(r.t); if (autoCam) setCam(camAt(r.tc)); if (tau >= playPl.total){ setT(1); setPlaying(false); } }
   controls.update(); sky.position.copy(camera.position);
   renderScene();
 }
@@ -1863,15 +1961,17 @@ function step(dt){
 /* ---------------- exportación MP4 ---------------- */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const yieldUI = () => new Promise(r => { const ch = new MessageChannel(); ch.port1.onmessage = () => { ch.port1.close(); r(); }; ch.port2.postMessage(0); });   // no se frena si la pestaña queda en segundo plano
-function drawOverlay(ctx, w, h, t){
+function drawOverlay(ctx, w, h, t, detail = false){
   const s = h / 720, info = stageInfo(t);
   ctx.save();
   const g = ctx.createLinearGradient(0, 0, 0, 120 * s); g.addColorStop(0, 'rgba(20,18,14,0.55)'); g.addColorStop(1, 'rgba(20,18,14,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, 120 * s);
   ctx.fillStyle = '#ffffff'; ctx.font = `800 ${30 * s}px Manrope, sans-serif`; ctx.textBaseline = 'top'; ctx.fillText(PROJECT.nombre, 36 * s, 30 * s);
   ctx.font = `600 ${15 * s}px Manrope, sans-serif`; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillText('Mazatlán, Sinaloa · 3 canchas de tenis', 36 * s, 68 * s);
-  const bx = 36 * s, by = h - 130 * s; const nameF = `800 ${26 * s}px Manrope, sans-serif`, subF = `500 ${15 * s}px Manrope, sans-serif`;
-  ctx.font = nameF; const nw = ctx.measureText(info.name).width; ctx.font = subF; const sw = ctx.measureText(info.sub).width;
-  const bw = Math.max(nw, sw, 220 * s) + 40 * s; ctx.fillStyle = 'rgba(250,247,241,0.92)'; roundRect(ctx, bx, by, bw, 96 * s, 14 * s); ctx.fill();
+  const D = detail && DETAIL[info.s.id] ? [...DETAIL[info.s.id].proc.slice(0, 2), DETAIL[info.s.id].cant.join(' · ')] : [], dF = `500 ${13 * s}px Manrope, sans-serif`;
+  const bh = (96 + D.length * 20 + (D.length ? 8 : 0)) * s, bx = 36 * s, by = h - 34 * s - bh; const nameF = `800 ${26 * s}px Manrope, sans-serif`, subF = `500 ${15 * s}px Manrope, sans-serif`;
+  ctx.font = nameF; const nw = ctx.measureText(info.name).width; ctx.font = subF; const sw = ctx.measureText(info.sub).width; ctx.font = dF; const dw = Math.max(0, ...D.map(x => ctx.measureText(x).width));
+  const bw = Math.min(w - 72 * s, Math.max(nw, sw, dw, 220 * s) + 40 * s); ctx.fillStyle = 'rgba(250,247,241,0.92)'; roundRect(ctx, bx, by, bw, bh, 14 * s); ctx.fill();
+  ctx.font = dF; D.forEach((x, i) => { ctx.fillStyle = i === D.length - 1 ? '#3d6b4f' : '#4a443a'; ctx.fillText(x, bx + 20 * s, by + (100 + i * 20) * s); });
   ctx.fillStyle = info.s.et === 2 ? '#a8603a' : '#3d6b4f'; ctx.font = `800 ${12 * s}px Manrope, sans-serif`; ctx.fillText((info.etapa + ' · paso ' + info.num).toUpperCase(), bx + 20 * s, by + 14 * s);
   ctx.fillStyle = '#2a2620'; ctx.font = nameF; ctx.fillText(info.name, bx + 20 * s, by + 34 * s);
   ctx.fillStyle = '#6a6153'; ctx.font = subF; ctx.fillText(info.sub, bx + 20 * s, by + 68 * s);
@@ -1886,18 +1986,18 @@ async function pickCodec(w, h, fps, bitrate){
   return null;
 }
 let cancelFlag = false;
-async function exportVideo({ seconds = 30, height = 720, fps = 30, overlay = true, download = true, quality:q = null, onProgress = () => {}, onWarn = () => {} } = {}){
+async function exportVideo({ seconds = 30, height = 720, fps = 30, overlay = true, detail = false, pause = 0, download = true, quality:q = null, onProgress = () => {}, onWarn = () => {} } = {}){
   if (exporting) throw new Error('Ya hay una exportación en curso');
   const w = height >= 1080 ? 1920 : 1280, h = height >= 1080 ? 1080 : 720;
-  const frames = Math.max(2, Math.round(seconds * fps));
+  const plan = playPlan(seconds, pause), frames = Math.max(2, Math.round(plan.total * fps));
   if (q) setQuality(q);
   exporting = true; cancelFlag = false; const wasPlaying = playing; setPlaying(false);
   const saved = { pos:camera.position.clone(), target:controls.target.clone(), t:tCur, pr:renderer.getPixelRatio() };
   renderer.setPixelRatio(1); renderer.setSize(w, h, false); composer.setPixelRatio(1); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); scaleLabels();
   try { await document.fonts.ready; } catch (e) {}
   const comp = document.createElement('canvas'); comp.width = w; comp.height = h; const ctx = comp.getContext('2d');
-  const renderFrame = i => { const t = i / (frames - 1); applyState(t); const c = camAt(t); camera.position.copy(c.pos); camera.lookAt(c.target); sky.position.copy(camera.position);
-    renderScene(); ctx.drawImage(renderer.domElement, 0, 0, w, h); if (overlay) drawOverlay(ctx, w, h, t); };
+  const renderFrame = i => { const r = sceneAt(plan, i / (frames - 1) * plan.total), t = r.t; applyState(t); const c = camAt(r.tc); camera.position.copy(c.pos); camera.lookAt(c.target); sky.position.copy(camera.position);
+    renderScene(); ctx.drawImage(renderer.domElement, 0, 0, w, h); if (overlay) drawOverlay(ctx, w, h, t, detail); };
   let blob = null, type = 'mp4';
   try {
     const cfg = ('VideoEncoder' in window) ? await pickCodec(w, h, fps, height >= 1080 ? 14e6 : 8e6) : null;
@@ -1932,23 +2032,28 @@ async function exportVideo({ seconds = 30, height = 720, fps = 30, overlay = tru
     if (wasPlaying) setPlaying(false);
   }
   if (blob && download) downloadBlob(blob, `canchas-tenis-anteproyecto-${h}p.${type}`);
-  return blob ? { blob, type, size:blob.size, frames, width:w, height:h } : null;
+  return blob ? { blob, type, size:blob.size, frames, width:w, height:h, seconds:frames / fps } : null;
 }
 // diálogo de exportación
 const dlg = $('dlgExport');
 $('expSupport').textContent = ('VideoEncoder' in window) ? 'Tu navegador soporta WebCodecs: se generará un MP4 (H.264).' : 'Tu navegador no soporta WebCodecs: se generará un WebM con MediaRecorder en tiempo real.';
+function expSeconds(){ const dv = $('expDur').value; return dv === 'custom' ? Math.max(2, Math.min(600, parseFloat($('expDurCustom').value) || 30)) : parseFloat(dv); }
+function updTotal(){ const tot = playPlan(expSeconds(), parseFloat($('expPause').value) || 0).total; $('expTotal').textContent = `${tot.toFixed(1)} s (${Math.floor(tot / 60)}:${String(Math.round(tot % 60)).padStart(2, '0')})`; }
+['expDur', 'expDurCustom', 'expPause'].forEach(id => $(id).addEventListener('input', updTotal)); ['expDur', 'expPause'].forEach(id => $(id).addEventListener('change', updTotal));
+$('selPause').addEventListener('change', e => { $('expPause').value = e.target.value; updTotal(); if (playing){ playPl = playPlan(parseFloat($('selDur').value) || 30, parseFloat(e.target.value) || 0); tau = tauOf(playPl, tCur); } });
+$('selDur').addEventListener('change', () => { if (playing){ playPl = playPlan(parseFloat($('selDur').value) || 30, parseFloat($('selPause').value) || 0); tau = tauOf(playPl, tCur); } });
 $('expDur').addEventListener('change', e => { $('expDurCustom').hidden = e.target.value !== 'custom'; });
-$('btnExport').addEventListener('click', () => { $('expForm').hidden = false; $('expProg').hidden = true; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); });
+$('btnExport').addEventListener('click', () => { updTotal(); $('expForm').hidden = false; $('expProg').hidden = true; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); });
 $('expCancel1').addEventListener('click', () => dlg.close());
 $('expCancel2').addEventListener('click', () => { cancelFlag = true; $('expTxt').textContent = 'Cancelando…'; });
 dlg.addEventListener('cancel', e => { if (exporting){ e.preventDefault(); } });
 $('expGo').addEventListener('click', async () => {
   const dv = $('expDur').value; const seconds = dv === 'custom' ? Math.max(2, Math.min(600, parseFloat($('expDurCustom').value) || 30)) : parseFloat(dv);
-  const height = parseInt($('expRes').value, 10), fps = parseInt($('expFps').value, 10), overlay = $('expOverlay').checked; setQuality($('expQ').value);
+  const height = parseInt($('expRes').value, 10), fps = parseInt($('expFps').value, 10), overlay = $('expOverlay').checked, detail = overlay && $('expDetail').checked, pause = parseFloat($('expPause').value) || 0; setQuality($('expQ').value);
   $('expForm').hidden = true; $('expProg').hidden = false; $('expWarn').textContent = ''; $('expBar').style.width = '0%';
   const t0 = performance.now();
   try {
-    const r = await exportVideo({ seconds, height, fps, overlay, onWarn:m => $('expWarn').textContent = m,
+    const r = await exportVideo({ seconds, height, fps, overlay, detail, pause, onWarn:m => $('expWarn').textContent = m,
       onProgress:(i, n) => { $('expBar').style.width = (i / n * 100).toFixed(1) + '%'; const el = (performance.now() - t0) / 1000; const eta = el / i * (n - i);
         $('expTxt').textContent = `Cuadro ${i} de ${n} · ${Math.round(i / n * 100)} % · faltan ~${Math.ceil(eta)} s`; } });
     if (r){ $('expBar').style.width = '100%'; $('expTxt').textContent = `Listo: ${(r.size / 1048576).toFixed(1)} MB (${r.type.toUpperCase()}, ${r.width}×${r.height}). Descarga iniciada.`; }
@@ -1958,7 +2063,7 @@ $('expGo').addEventListener('click', async () => {
 });
 
 /* ---------------- arranque ---------------- */
-setQuality(quality); renderPts(); setT(0); setPlaying(false);
+setQuality(quality); buildStageList(); applyPin(); renderPts(); setT(0); setPlaying(false);
 $('loading').remove();
 requestAnimationFrame(loop);
 window.visor = { PROJECT, STAGES, setT, getT:() => tCur, step, get playing(){ return playing; }, camera, setCam:(p, t) => setCam({ pos:new THREE.Vector3(...p), target:new THREE.Vector3(...t) }), camAt, exportVideo, applyState, get points(){ return camPts; }, scene, renderer };
