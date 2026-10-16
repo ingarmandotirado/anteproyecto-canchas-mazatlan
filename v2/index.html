@@ -359,7 +359,7 @@ const PROJECT = {
     mesasLounge: [],
     mesasDeck: [[40.30,104.55],[42.20,104.55],[47.00,104.55],[48.85,104.55],[50.50,104.55]]
   },
-  cont20: { x:[75.87,81.93], y:[90.07,92.51], firme:[[74.47,87.67],[83.40,87.67],[83.40,90.07],[74.47,90.07]], andador:{ x:[74.47,75.87], y:[90.07,102.91] }, franja:{ x:[75.87,81.93], y:[92.51,93.91] }, vending:{ x:[76.10,77.10], y:[89.17,90.07] } },   // rev5: baños + bodega de pádel; máquina expendedora bajo alero
+  cont20: { x:[75.87,81.93], y:[90.07,92.51], firme:[[74.47,87.67],[83.40,87.67],[83.40,90.07],[74.47,90.07]], andador:{ x:[74.47,75.87], y:[90.07,102.91] }, franja:{ x:[75.87,81.93], y:[92.51,93.91] } },   // rev6: baños con puertas al norte + bodega de pádel
   padelV2: { x:[75.247,85.247], y:[67.117,87.117], red:77.117, saque:6.95 },
   convivencia: [ { jard:[36.07,107.42], mesas:[[35.30,105.20],[37.00,105.20],[35.40,109.80]] }, { jard:[54.115,107.42], mesas:[[53.25,105.20],[55.00,105.20],[54.10,109.80]] } ],   // jardineras redondas de Ø1.60
   acceso: { rampa:{ x:[43.625,46.625], y:[110.72,114.47], z:[0.50,0.20] }, jardineras:[ { x:[42.30,43.55], y:[110.80,114.02] }, { x:[46.70,47.95], y:[110.80,114.02] } ],
@@ -1088,7 +1088,7 @@ const MODS = (() => {
     { key:'C-f', mod:'social', x:[cx0, cx1], y:FR, z0:ZF, open:{ E:[[106.57, 107.47, 0, 2.1]], W:[[107.83, 108.23, 0, 2.1]] }, dropS:true, dropN:true },
     { key:'C-t', mod:'social', x:[cx0, cx1], y:TR, z0:ZF, open:{ N:[[44.425, 45.825, 0, 2.2]], W:[[108.23, 108.73, 0, 2.1]] }, dropS:true, noRoof:true },
     { key:'K-f', mod:'snacks', x:[kx0, kx1], y:FR, z0:ZF, open:{ N:[[59.60, 60.40, 0, 2.1]], E:[[106.50, 107.40, 0, 2.1]] }, dropS:true },
-    { key:'K-t', mod:'snacks', x:[kx0, kx1], y:TR, z0:ZF, open:{ N:[[61.65, 62.55, 0, 2.1], [64.00, 64.80, 0, 2.1]], E:[[108.60, 110.20, 0, 2.2]] }, dropS:true },
+    { key:'K-t', mod:'snacks', x:[kx0, kx1], y:TR, z0:ZF, open:{ E:[[108.60, 110.20, 0, 2.2]] }, dropS:true },
     { key:'C20', mod:'c20', x:PROJECT.cont20.x, y:PROJECT.cont20.y, z0:ZF, open:{ N:[[79.20, 80.00, 0, 2.1], [80.75, 81.55, 0, 2.1]], W:[[90.90, 91.80, 0, 2.1]] } },
     { key:'C-up', mod:'social', x:[cx0, cx1], y:FR, z0:NM.alto, dropS:true, dropN:true, upper:true }
   ];
@@ -1164,15 +1164,15 @@ const MODS = (() => {
   // módulo central (social) abierto: marco, 10 postes PTR y vigas de transferencia bajo el apilado
   [[39.06, 105.80], [39.06, 108.23], [39.06, 110.66], [51.18, 105.80], [51.18, 108.23], [51.18, 110.66], [43.10, 105.80], [47.14, 105.80], [43.10, 108.23], [47.14, 108.23]].forEach(([x, y]) => BOX(I.frame, steel, x - .06, x + .06, y - .06, y + .06, zF, NM.alto));
   [105.80, 108.23].forEach(y => BOX(I.frame, steel, cx0, cx1, y - .08, y + .08, NM.alto - .3, NM.alto));
-  // núcleo de baños al poniente: M con WC accesible al sur, pasillo de 1.00, H al norte
-  wl(42.98, 43.06, FR[0] + .05, 107.83); wl(42.98, 43.06, 108.83, TR[1] - .05);
-  wl(39.12, 41.50, 107.79, 107.87); wl(42.40, 43.02, 107.79, 107.87); wl(39.12, 41.50, 108.79, 108.87); wl(42.40, 43.02, 108.79, 108.87);
-  wl(41.68, 41.72, FR[0] + .05, 106.95, 1.9);
-  wc(39.65, 106.25); wc(42.40, 106.25); lav(40.95, 106.0); lav(40.95, 107.55); wc(39.65, 110.15); BOX(I.fix, cer, 40.75, 41.05, 110.42, 110.60, zF + .5, zF + 1.15); lav(42.35, 110.35);
-  // muro y mostrador de recepción (3.20) y lounge con 2 sofás y 2 mesas
-  BOX(I.social, std('#e7e2d8', .85), 44.20, 47.40, 108.16, 108.30, zF, zF + 2.4); BOX(I.social, std('#2f302d', .6), 44.40, 47.20, 107.55, 108.05, zF, zF + 1.0); BOX(I.social, woodTop, 44.30, 47.30, 107.50, 108.10, zF + 1.0, zF + 1.05);
-  const sofaM = std('#6d5a48', .9); [[44.0, 106.25, 0], [47.6, 106.25, Math.PI]].forEach(([x, y]) => { BOX(I.social, sofaM, x - 1.0, x + 1.0, y - .42, y + .42, zF, zF + .42); BOX(I.social, sofaM, x - 1.0, x + 1.0, y - .42, y - .22, zF + .42, zF + .85); });
-  [[44.0, 107.05], [47.6, 107.05]].forEach(([x, y]) => { BOX(I.social, woodTop, x - .45, x + .45, y - .25, y + .25, zF + .38, zF + .42); BOX(I.social, steel, x - .03, x + .03, y - .03, y + .03, zF, zF + .38); });
+  // núcleo de baños compacto (rev6): mujeres accesible al sur, pasillo con puerta poniente, hombres al norte
+  wl(41.52, 41.62, FR[0] + .05, 107.68); wl(41.52, 41.62, 108.88, TR[1] - .05);
+  wl(39.12, 41.52, 107.68, 107.78); wl(39.12, 41.52, 108.78, 108.88);
+  BOX(I.fix, inox, 39.30, 39.34, 106.10, 106.90, zF + .75, zF + .79);   // barra de apoyo
+  wc(39.65, 106.35); lav(41.05, 106.10); wc(39.65, 110.15); BOX(I.fix, cer, 40.45, 40.75, 110.42, 110.58, zF + .5, zF + 1.15); lav(41.10, 110.30);
+  // sin muro de recepción (vista libre norte–sur): mostrador bajo exento de 2.40×0.60 y 1.05 m; lounge con 3 sofás y mesas de centro
+  BOX(I.social, std('#2f302d', .6), 42.05, 44.35, 109.15, 109.69, zF, zF + 1.0); BOX(I.social, woodTop, 42.00, 44.40, 109.12, 109.72, zF + 1.0, zF + 1.05);
+  const sofaM = std('#6d5a48', .9); [[43.4, 106.20], [46.2, 106.20], [49.0, 106.20]].forEach(([x, y]) => { BOX(I.social, sofaM, x - .95, x + .95, y - .42, y + .42, zF, zF + .42); BOX(I.social, sofaM, x - .95, x + .95, y - .42, y - .22, zF + .42, zF + .85); });
+  [[43.4, 107.05], [46.2, 107.05], [49.0, 107.05]].forEach(([x, y]) => { BOX(I.social, woodTop, x - .45, x + .45, y - .25, y + .25, zF + .38, zF + .42); BOX(I.social, steel, x - .03, x + .03, y - .03, y + .03, zF, zF + .38); });
   { const E = M.escaleraL, rise = .18125, t1 = E.tramo1, t2 = E.tramo2, run1 = (t1.x[1] - t1.x[0]) / (t1.peraltes - 1), run2 = (t2.y[1] - t2.y[0]) / (t2.peraltes - 1);
     for (let k = 0; k < t1.peraltes - 1; k++){ const x = t1.x[0] + k * run1; BOX(I.social, steelL, x, x + run1 + .02, t1.y[0], t1.y[1], zF + (k + 1) * rise - .05, zF + (k + 1) * rise); }
     BOX(I.social, steelL, E.descanso.x[0], E.descanso.x[1], E.descanso.y[0], E.descanso.y[1], E.descanso.z - .08, E.descanso.z);
@@ -1190,13 +1190,13 @@ const MODS = (() => {
   BOX(I.gym, std('#2b2b2b', .5), 23.93, 24.73, 108.50, 110.30, zF, zF + .2); BOX(I.gym, std('#333', .4), 24.03, 24.63, 110.15, 110.25, zF + .2, zF + 1.2);
   BOX(I.gym, std('#2b2b2b', .5), 22.77, 23.37, 108.80, 109.90, zF, zF + .9); BOX(I.gym, std('#333', .4, { metalness:.5 }), 21.75, 22.65, 108.70, 110.40, zF, zF + 2.1);
   BOX(I.floors, std('#2f3433', .9), 21.55, gx1 - .06, FR[0] + .06, TR[1] - .06, zF + .002, zF + .006, false);
-  BOX(I.floors, skin(std('#ffffff', .7), TEX.wood, null), 43.06, cx1 - .06, FR[0] + .06, TR[1] - .06, zF + .002, zF + .006, false);
+  BOX(I.floors, skin(std('#ffffff', .7), TEX.wood, null), 41.62, cx1 - .06, FR[0] + .06, TR[1] - .06, zF + .002, zF + .006, false);
   // snacks + servicio (módulo derecho): barra abierta al sur, 4 refris y cocineta; atrás limpieza, hidráulico, eléctrico y bodega
   BOX(I.snacks, std('#2f302d', .6), 59.10, 70.80, 106.00, 106.50, zF, zF + 1.0); BOX(I.snacks, woodTop, 59.00, 70.90, 105.90, 106.55, zF + 1.0, zF + 1.05);
   for (let k = 0; k < 4; k++){ BOX(I.snacks, std('#d9dcdc', .3, { metalness:.4 }), 61.0 + k * .8, 61.75 + k * .8, 107.50, 108.15, zF, zF + 1.9); BOX(I.snacks, glassM, 61.05 + k * .8, 61.7 + k * .8, 107.47, 107.50, zF + .1, zF + 1.8, false); }
   BOX(I.snacks, white, 64.5, 69.8, 107.55, 108.15, zF, zF + .9); BOX(I.snacks, std('#cfcac0', .3), 64.45, 69.85, 107.50, 108.17, zF + .9, zF + .94);
   BOX(I.snacks, inox, 65.0, 65.8, 107.65, 108.05, zF + .92, zF + .96); BOX(I.snacks, std('#222', .5), 66.6, 67.4, 107.65, 108.05, zF + .94, zF + 1.0); BOX(I.snacks, woodTop, 64.5, 69.8, 107.95, 108.15, zF + 1.65, zF + 1.69);
-  BOX(I.snacks, white, 60.40, 60.48, TR[0] + .05, TR[1] - .05, zF, zF + WH); BOX(I.snacks, white, 63.60, 63.68, TR[0] + .05, TR[1] - .05, zF, zF + WH); BOX(I.snacks, white, 65.30, 65.38, TR[0] + .05, TR[1] - .05, zF, zF + WH);
+  [60.76, 63.66, 65.36].forEach(x => { BOX(I.snacks, white, x - .04, x + .04, TR[0] + .05, 109.57, zF, zF + WH); BOX(I.snacks, white, x - .04, x + .04, 110.37, TR[1] - .05, zF, zF + WH); BOX(I.snacks, white, x - .04, x + .04, 109.57, 110.37, zF + 2.1, zF + WH); });
   BOX(I.snacks, inox, 59.20, 60.10, 110.15, 110.55, zF + .8, zF + .9);
   { const c = new THREE.Mesh(new THREE.CylinderGeometry(.7, .7, 1.25, 20), std('#2c2c2c', .7)); c.position.copy(W(61.6, 109.45, zF + .63)); c.castShadow = true; I.snacks.add(c);
     const h = new THREE.Mesh(new THREE.CylinderGeometry(.22, .22, .6, 14), std('#3f6fae', .4, { metalness:.4 })); h.position.copy(W(63.0, 109.0, zF + .3)); I.snacks.add(h); }
@@ -1210,9 +1210,6 @@ const MODS = (() => {
     wc(79.60, y0 + .45, Math.PI, I.c20); wc(81.10, y0 + .45, Math.PI, I.c20); lav(79.20, y1 - .45, I.c20); lav(81.60, y1 - .45, I.c20);
     for (let k = 0; k < 2; k++) BOX(I.c20, std('#8a8f92', .5, { metalness:.5 }), 76.0 + k * 1.35, 77.2 + k * 1.35, y1 - .5, y1 - .08, zF, zF + 1.9);
     [[76.6, 90.6], [77.5, 90.6]].forEach(([x, y]) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(.28, .25, .7, 14, 1, true), std('#2b2b2b', .7, { side:THREE.DoubleSide })); b.position.copy(W(x, y, zF + .35)); I.c20.add(b); }); }
-  const vend = new THREE.Group(); root.add(vend); { const V = PROJECT.cont20.vending;
-    BOX(vend, std('#c0392b', .4, { metalness:.3 }), V.x[0], V.x[1], V.y[0], V.y[1], .1, 1.95); const fr = new THREE.Mesh(new THREE.PlaneGeometry(.7, 1.2), new THREE.MeshStandardMaterial({ color:0xdfe8ee, emissive:0xbfd8ff, emissiveIntensity:.6, roughness:.2 })); fr.position.copy(W((V.x[0] + V.x[1]) / 2 - .1, V.y[0] - .005, 1.25)); vend.add(fr);
-    BOX(vend, steelL, V.x[0] - .2, V.x[1] + .3, V.y[0] - .15, PROJECT.cont20.y[0], 2.35, 2.42); }
   // corredizas: social (cancelería sur), gimnasio (al deck)
   const slider = (x0, x1, y, zb, zt) => { const n = 2, lw = (x1 - x0) / n; BOX(I.sliders, alu, x0, x1, y - .04, y + .04, zt, zt + .06); BOX(I.sliders, alu, x0, x1, y - .04, y + .04, zb, zb + .04);
     for (let k = 0; k < n; k++){ const a = x0 + k * lw, b = a + lw; [a, b].forEach(x => BOX(I.sliders, alu, x - .025, x + .025, y - .02 + (k ? .03 : 0), y + .02 + (k ? .03 : 0), zb, zt));
@@ -1221,7 +1218,7 @@ const MODS = (() => {
   const doorM = std('#3f4b44', .5, { metalness:.3 });
   const dX = (x, a, b, h = 2.1) => BOX(I.doors, doorM, x - .01, x + .01, a, b, zF, zF + h), dY = (y, a, b, h = 2.1) => BOX(I.doors, doorM, a, b, y - .01, y + .01, zF, zF + h);
   dX(gx1 + .02, 106.17, 107.07); dX(cx1 + .02, 106.57, 107.47); dX(cx0 - .02, 107.83, 108.73); dX(kx1 + .02, 106.50, 107.40); dX(kx1 + .02, 108.60, 110.20, 2.2);
-  dY(TR[1] + .02, 61.65, 62.55); dY(TR[1] + .02, 64.00, 64.80);
+  // rev6: sin puertas a la cara norte; acceso interior bodega → eléctrico → hidráulico → limpieza
   [[79.20, 80.00], [80.75, 81.55]].forEach(([a, b]) => dY(PROJECT.cont20.y[1] + .02, a, b)); dX(PROJECT.cont20.x[0] - .02, 90.90, 91.80);
   BOX(I.doors, alu, 44.425, 45.825, TR[1] + .01, TR[1] + .04, zF, zF + 2.2); { const g2 = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 2.1), glassM); g2.position.copy(W(45.125, TR[1] + .025, zF + 1.1)); I.doors.add(g2); }
   // mesas del deck social
@@ -1272,7 +1269,6 @@ const MODS = (() => {
     // interiores
     show(I.frame, smooth(PI(.08, .2))); show(I.walls, smooth(PI(.2, .36))); show(I.fix, smooth(PI(.34, .5))); show(I.social, smooth(PI(.48, .66))); show(I.gym, smooth(PI(.64, .78))); show(I.c20, smooth(PI(.7, .82))); show(I.snacks, smooth(PI(.7, .82)));
     { const kc = smooth(PI(.82, .9)), ko = smooth(clamp01((T - SEG.vida.t0) / ((SEG.vida.t1 - SEG.vida.t0) * .08))); shutter.visible = kc > 0; shPanel.scale.y = Math.max(.02, kc * (1 - ko)); }
-    { const kv2 = smooth(PI(.86, .95)); vend.visible = kv2 > 0; vend.scale.y = Math.max(1e-3, kv2); }
     show(I.floors, smooth(PI(.2, .25))); show(I.sliders, smooth(PI(.12, .22))); show(I.doors, smooth(PI(.82, .92)));
     loungeTables.forEach((t, i) => show(t, smooth(PI(.6 + i * .03, .7 + i * .03)), 'y'));
     deckTables.forEach((t, i) => show(t, smooth(sp('terraza', .85 + i * .02, .93 + i * .015)), 'y'));
@@ -1832,7 +1828,7 @@ const VIDA = (() => {
   const PATHS = [
     [P(45.125, 121.5), P(45.125, 114.6), P(45.125, 110.8), P(44.5, 108.2), P(45.125, 105.6), P(45.125, 103.1), P(53.3, 103.0), P(54.125, 101.87), P(55.125, 99.4), P(55.125, 95.0)],
     [P(17.2, 103.05), P(52.6, 103.05)],
-    [P(52.5, 104.5), P(57.5, 103.1), P(72.0, 103.1), P(73.295, 101.865), P(75.17, 99.5), P(75.17, 92.9), P(75.4, 88.9), P(76.4, 88.4)],
+    [P(52.5, 104.5), P(57.5, 103.1), P(72.0, 103.1), P(73.295, 101.865), P(75.17, 99.5), P(75.17, 92.9), P(75.17, 89.0)],
     [P(30.0, 113.6), P(30.0, 116.4), P(45.125, 116.4), P(45.125, 114.6), P(45.125, 111.0)],
     [P(27.5, 104.4), P(27.5, 103.1), P(36.6, 102.6), P(36.125, 101.87), P(35.125, 99.4), P(35.125, 95.0)]
   ];
@@ -1880,15 +1876,14 @@ const VIDA = (() => {
       { const c = frac(p * 2.2), go = c < .5, f = smooth(go ? c * 2 : 2 - c * 2), x = lerp(20.2, 30.2, f); place(terrP[2], Lx(x), Ly(108.0), zt, H(go ? 1 : -1, 0)); pose(terrP[2], 'walk', x / 1.2); }
       [[61.8, 103.75], [67.6, 103.75]].forEach(([x, y], k) => { place(terrP[3 + k], Lx(x), Ly(y), zt, H(0, -1)); pose(terrP[3 + k], 'lean', p * 6 + k * .7); }); }
     // social abierto: recepción, sofás del lounge y deck
-    { const zf = NM.piso; place(lounge.barista, Lx(45.8), Ly(108.55), zf, H(0, -1)); pose(lounge.barista, 'lean', p * 7);
-      [45.0, 46.6].forEach((x, k) => { place(lounge.bar[k], Lx(x), Ly(107.2), zf, H(0, 1)); pose(lounge.bar[k], 'lean', p * 8 + k * .4); });
-      [[44.0, 106.35, H(0, 1)], [47.6, 106.35, H(0, 1)]].forEach(([x, y, hd], k) => { place(lounge.mesa[k], Lx(x + (k ? .4 : -.4)), Ly(y), zf - .02, hd); pose(lounge.mesa[k], 'sit', p * 7 + k * .5); });
+    { const zf = NM.piso; place(lounge.barista, Lx(43.2), Ly(110.05), zf, H(0, -1)); pose(lounge.barista, 'lean', p * 7);
+      [42.7, 43.8].forEach((x, k) => { place(lounge.bar[k], Lx(x), Ly(108.75), zf, H(0, 1)); pose(lounge.bar[k], 'lean', p * 8 + k * .4); });
+      [[43.4, 106.35, H(0, 1)], [49.0, 106.35, H(0, 1)]].forEach(([x, y, hd], k) => { place(lounge.mesa[k], Lx(x + (k ? .4 : -.4)), Ly(y), zf - .02, hd); pose(lounge.mesa[k], 'sit', p * 7 + k * .5); });
       [[0, Math.PI / 2], [0, -Math.PI / 2], [3, Math.PI / 2], [4, -Math.PI / 2]].forEach(([ti, an], k) => { const [x, y] = M.mesasDeck[ti]; place(lounge.deck[k], Lx(x) + Math.cos(an) * .62, Ly(y) + Math.sin(an) * .62, NM.deck, H(-Math.cos(an), -Math.sin(an))); pose(lounge.deck[k], 'sit', p * 6 + k * .37); }); }
-    // barra de snacks (cortina abierta) y máquina expendedora del pádel
+    // barra de snacks (cortina abierta)
     { [61.2, 64.4, 67.6].forEach((x, k) => { place(snack.cl[k], Lx(x), Ly(105.45), NM.deck, H(0, 1)); pose(snack.cl[k], 'lean', p * 9 + k * .3); });
       snack.att.forEach((w, k) => { const c = frac(p * 4 + k * .5), go = c < .5, f = smooth(go ? c * 2 : 2 - c * 2), x = lerp(k ? 65.5 : 59.8, k ? 70.2 : 64.8, f), still = (c % .5) > .38;
-        place(w, Lx(x), Ly(106.95), NM.piso, still ? H(0, -1) : H(go ? 1 : -1, 0)); pose(w, still ? 'lean' : 'walk', x / .6); });
-      const V = PROJECT.cont20.vending; place(snack.vend, Lx((V.x[0] + V.x[1]) / 2 - .1), Ly(V.y[0] - .5), .10, H(0, 1)); pose(snack.vend, 'lean', p * 10); }
+        place(w, Lx(x), Ly(106.95), NM.piso, still ? H(0, -1) : H(go ? 1 : -1, 0)); pose(w, still ? 'lean' : 'walk', x / .6); }); }
     // gimnasio: pilates en reformers, instructora, caminadora y bici
     { const zf = NM.piso + .3; [30.79, 29.49, 28.19].forEach((x, k) => { place(gymP.ref[k], Lx(x), Ly(109.6), zf - .05, H(0, -1)); pose(gymP.ref[k], 'lie', p * 18 + k * .2); });
       place(gymP.inst, Lx(25.6), Ly(108.9), NM.piso, H(1, 0)); pose(gymP.inst, 'cheer', p * 9); place(gymP.walk, Lx(24.33), Ly(109.3), NM.piso + .2, H(0, -1)); pose(gymP.walk, 'walk', p * 60); place(gymP.bike, Lx(23.07), Ly(109.25), NM.piso + .05, H(0, -1)); pose(gymP.bike, 'bike', p * 70); }
@@ -1961,7 +1956,7 @@ const DETAIL = {
   alumbrado: { proc:['Alumbrado: 8 postes metálicos de 10 m · EN 12193 / guía ITF · clase por definir.', 'Dado, registro al pie y ducto al troncal; 2–3 reflectores LED por poste según cálculo fotométrico.'], cant:[] },
   contenedores: { proc:['6 contenedores HC 40′ (2 por módulo) y uno de 20′, colocados con grúa sobre dados de concreto.', 'Unión soldada por el lado largo en cada módulo.', 'El contenedor de la sala se apila sobre el lounge del módulo social.'], cant:[] },
   estructura: { proc:['Postes PTR de 4″ en la línea del deck; decks a +0.20 y plataformas metálicas a +3.40.', 'Sala de espectadores cerrada de 12.12 × 4.93 con ventanales (antepecho 0.45) y techo a +6.30.', 'Cubierta ligera del vestíbulo a +6.30, terrazas abiertas con barandal de 1.10 y caracoles.'], cant:[] },
-  interiores: { proc:['Techos en corte; en el social se retiran los muros y quedan el marco, 10 postes PTR y vigas de transferencia.', 'Social: núcleo de baños al poniente, recepción con mostrador al centro, lounge abierto y escalera en L.', 'Gimnasio a la izquierda con reformers y vestidores; snacks y servicio a la derecha con barra abierta y cortina enrollable.'], cant:[] },
+  interiores: { proc:['Techos en corte; en el social se retiran los muros y quedan el marco, 10 postes PTR y vigas de transferencia.', 'Social: baños compactos al poniente, sin muro de recepción (mostrador bajo exento), lounge abierto con 3 sofás y escalera en L.', 'Gimnasio a la izquierda con reformers y vestidores; snacks y servicio a la derecha con barra abierta y cortina enrollable.'], cant:[] },
   padel:     { proc:['Losa de concreto y estructura metálica.', 'Fondos de vidrio templado de 3 m con retornos de 2.00; laterales de malla con accesos de 1.00.', 'Césped sintético azul con líneas y red; firme y andador de gravilla al contenedor de bebidas.'], cant:[] },
   terraza:   { proc:['Plaza de gravilla de sello con bordillo entre los módulos.', 'Acceso: portón de 3.00, corredor con jardineras y rampa al 8 % hasta el vestíbulo.', 'Áreas de convivencia con jardinera, árbol de sombra, 3 mesitas y 9 bancos cada una.'], cant:[] },
   grava:     { proc:['Afine y compactación al 95 % PVSM.', 'Revestimiento de grava triturada de ¾" con finos; 10 cajones al poniente y 8 al oriente.'], cant:[] },
@@ -1974,7 +1969,7 @@ const DETAIL = {
   e2acril:   { proc:['Cushion, resurfacer, color en 2 tonos y líneas.'], cant:['Sistema acrílico 668.87 m² por capa', 'Líneas 146.48 ml'] },
   e2red:     { proc:['Postes con malacate, red y banca de doble vista en el pasillo C3|C2.'], cant:['Postes 1 jgo · red 1 pza'] },
   fin:       { proc:['3 canchas con sistema acrílico, 3 módulos de contenedores, pádel y contenedor de bebidas.', 'Limpieza final de obra.'], cant:[] },
-  vida:      { proc:['Partidos de tenis y pádel; espectadores en la sala cerrada y en las terrazas abiertas.', 'Recepción y lounge abierto, pilates en el gimnasio, barra de snacks con la cortina abierta y máquina expendedora del pádel.'], cant:[] }
+  vida:      { proc:['Partidos de tenis y pádel; espectadores en la sala cerrada y en las terrazas abiertas.', 'Recepción y lounge abierto, pilates en el gimnasio y barra de snacks con la cortina abierta.'], cant:[] }
 };
 const SUBS = {
   contenedores:[['Dados de concreto', .08], ['Llegada de los contenedores con grúa', .72], ['Unión de los módulos', .82], ['Apilado del contenedor de la sala', 1]],
