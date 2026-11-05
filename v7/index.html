@@ -639,7 +639,7 @@ VISOR.modulo = {
     // barandal de cristal templado h 1.05 en el borde norte hacia la doble altura; libre la llegada de la escalera (x 59.63 a 60.63)
     const railG = (a, b, z, h = 1.05) => { quad(root, a, b, z + .05, z + h - .05, MB.glass); seg(root, a, b, z + h - .05, z + h, .05, MB.steel, false); seg(root, a, b, z, z + .06, .06, MB.steel, false);
       for (const [p] of splitSeg(a, b, 1.2)) box(root, p[0] - .025, p[1] - .025, p[0] + .025, p[1] + .025, z, z + h, MB.steel, { cast:false }); box(root, b[0] - .025, b[1] - .025, b[0] + .025, b[1] + .025, z, z + h, MB.steel, { cast:false }); };
-    railG([mz[0], mzN - .03], [mz[2], mzN - .03], NV.mezz);
+    railG([mz[0], mzN - .03], [mz[2], mzN - .03], NV.mezz, 1.20);   // h 1.20 (se subió al llevar la plataforma de 0.20 a los sillones)
     tag('canceleria', 'pop');
     /* lounge familiar (DXF 04-11, detalle "PLANTA MEZZANINE N+3.00"): barra-repisa corrida al frente sur interrumpida en los postes con 24 bancos, 3 sofás de 2 plazas con
        mesa de centro mirando al sur y zona TV en el muro poniente (2 TV de 65" a 1.20, sofá de 3 plazas y 2 sillones mirando al poniente). Coordenadas del plano (y_rel). */
@@ -655,16 +655,27 @@ VISOR.modulo = {
         cyl(root, x, y, bz, bz + .70, .028, .028, MB.steel, 8); cyl(root, x, y, bz + .70, bz + .75, .19, .19, MB.black, 14); cyl(root, x, y + .1, bz + .26, bz + .285, .12, .015, MB.steel, 12);
         mezzSeats.push([x, y, bz + .28, 'stool', 0, -1, (i + ti) % 4 === 1]); }
     });
-    const sofa = (x0, y0, x1, y1, dir) => {   // dir 'S': mira al sur, respaldo al norte; 'W': mira al poniente, respaldo al oriente
+    const sofa = (x0, y0, x1, y1, dir, bz = NV.mezz) => {   // dir 'S': mira al sur, respaldo al norte; 'W': mira al poniente, respaldo al oriente
       const h = .42; box(root, x0, y0, x1, y1, bz, bz + h, sofaM);
       if (dir === 'S'){ box(root, x0, y1 - .18, x1, y1, bz + h, bz + .85, sofaM); box(root, x0, y0, x0 + .14, y1 - .18, bz + h, bz + .62, sofaM); box(root, x1 - .14, y0, x1, y1 - .18, bz + h, bz + .62, sofaM); box(root, x0 + .14, y0 + .03, x1 - .14, y1 - .18, bz + h, bz + h + .08, cojM); }
       else { box(root, x1 - .18, y0, x1, y1, bz + h, bz + .85, sofaM); box(root, x0, y0, x1 - .18, y0 + .14, bz + h, bz + .62, sofaM); box(root, x0, y1 - .14, x1 - .18, y1, bz + h, bz + .62, sofaM); box(root, x0 + .03, y0 + .14, x1 - .18, y1 - .14, bz + h, bz + h + .08, cojM); } };
-    const mesaC = (x0, y0, x1, y1) => { box(root, x0, y0, x1, y1, bz + .38, bz + .42, [MB.wood, MB.woodDark, MB.woodDark]); for (const [x, y] of [[x0 + .05, y0 + .05], [x1 - .05, y0 + .05], [x0 + .05, y1 - .05], [x1 - .05, y1 - .05]]) box(root, x - .02, y - .02, x + .02, y + .02, bz, bz + .38, MB.steel, { cast:false }); };
+    const mesaC = (x0, y0, x1, y1, bz = NV.mezz) => { box(root, x0, y0, x1, y1, bz + .38, bz + .42, [MB.wood, MB.woodDark, MB.woodDark]); for (const [x, y] of [[x0 + .05, y0 + .05], [x1 - .05, y0 + .05], [x0 + .05, y1 - .05], [x1 - .05, y1 - .05]]) box(root, x - .02, y - .02, x + .02, y + .02, bz, bz + .38, MB.steel, { cast:false }); };
     // lounge central: 3 sofás de 2 plazas 1.80 × 0.85 (respaldo en y 2.75) con mesa de centro 1.00 × 0.50, mirando al sur
-    [49.90, 52.80, 55.70].forEach((sx, i) => { const sy1 = 2.75, sy0 = sy1 - .85; sofa(sx, sy0, sx + 1.8, sy1, 'S'); mesaC(sx + .4, 1.20, sx + 1.4, 1.70);
-      for (const [k, dx] of [[0, .45], [1, 1.35]]) mezzSeats.push([sx + dx, sy1 - .5, bz + .02, 'sofa', 0, -1, (i === 0 && k === 0) || (i === 1 && k === 1) || i === 2]); });
+    // plataforma de 0.20 para los sillones del lounge (ven por encima de los bancos de la barra hacia las canchas); nariz con tira LED; libre >= 0.77 a la zona TV y 0.90 al barandal
+    const pz = bz + .20, px0 = 50.05, px1 = 57.65, py0 = 1.05, py1 = 2.80;
+    box(root, px0, py0, px1, py1, bz, pz, [MB.wood, MB.woodDark, MB.woodDark]);
+    { const ledM = new THREE.MeshStandardMaterial({ color:0xfff1d6, emissive:0xffd9a0, emissiveIntensity:0, roughness:.4 }); emis.push(ledM); const ledB = B(ledM); emis.push(ledB);
+      box(root, px0, py0 - .005, px1, py0 + .01, pz - .04, pz - .025, ledB, { cast:false }); }
+    [50.20, 52.95, 55.70].forEach((sx, i) => { const sy1 = 2.75, sy0 = sy1 - .85; sofa(sx, sy0, sx + 1.8, sy1, 'S', pz); mesaC(sx + .4, 1.20, sx + 1.4, 1.70, pz);
+      for (const [k, dx] of [[0, .45], [1, 1.35]]) mezzSeats.push([sx + dx, sy1 - .5, pz + .02, 'sofa', 0, -1, (i === 0 && k === 0) || (i === 1 && k === 1) || i === 2]); });
     // zona TV (muro poniente x 44.342, y 0.62 a 3.70): 2 pantallas de 65" (1.44 × 0.81) a 1.20 del piso, sofá de 3 plazas y 2 sillones mirando al poniente, mesa de centro
     for (const [ya, yb] of [[0.701, 2.141], [2.181, 3.621]]){ const xw = S[0] + .15; box(root, xw, ya, xw + .07, yb, bz + 1.20, bz + 2.01, tvB); box(root, xw + .005, ya + .03, xw + .075, yb - .03, bz + 1.23, bz + 1.98, tvB); }
+    // mueble de TV bajo las pantallas: credenza de 0.45 x 2.92 a h 0.55 (cubierta de madera, frentes oscuros, zoclo remetido)
+    { const xw = S[0] + .15, ya = .70, yb = 3.62;
+      box(root, xw, ya, xw + .45, yb, bz + .12, bz + .52, [MB.woodDark, MB.woodDark, MB.woodDark]);
+      box(root, xw, ya - .01, xw + .46, yb + .01, bz + .52, bz + .55, [MB.wood, MB.wood, MB.wood]);
+      box(root, xw, ya + .05, xw + .38, yb - .05, bz, bz + .12, MB.black, { cast:false });
+      for (let k = 1; k < 4; k++){ const y = lerp(ya, yb, k / 4); box(root, xw + .45, y - .004, xw + .455, y + .004, bz + .14, bz + .50, MB.black, { cast:false }); } }
     const xS = 48.43, yc = 2.141; sofa(xS, yc - 1.025, xS + .85, yc + 1.025, 'W'); mesaC(47.43, yc - .25, 48.33, yc + .25);
     sofa(47.43, yc - .25 - .1 - .70, 48.13, yc - .25 - .1, 'W'); sofa(47.43, yc + .25 + .1, 48.13, yc + .25 + .1 + .70, 'W');
     [[yc - .68, true], [yc, false], [yc + .68, true]].forEach(([y, o]) => mezzSeats.push([xS + .38, y, bz + .02, 'sofa', -1, 0, o]));
@@ -777,6 +788,7 @@ VISOR.modulo = {
   const chairM = MB.black, topM = MB.wood;
   for (const m of G.mobiliario){
     const [x0, y0, x1, y1] = m.bb, w = x1 - x0, d = y1 - y0, L = Math.max(w, d), t = Math.min(w, d), cx = (x0 + x1) / 2, cyy = (y0 + y1) / 2, z = zFloor(cx, cyy);
+    if (inBB(cx, cyy, [44.342, .80, 60.632, 6.30])) continue;   // salón interior: acomodo nuevo abajo
     if (m.circ.length && m.arcs.length >= 3){   // mesa con sillas
       const [tx, ty, tr] = m.circ.sort((a, b) => b[2] - a[2])[0];
       cyl(root, tx, ty, z + .72, z + .76, tr * .82, tr * .82, topM, 24); cyl(root, tx, ty, z, z + .72, .05, .05, MB.steel, 8); cyl(root, tx, ty, z, z + .02, .28, .28, MB.steel, 16);
@@ -822,6 +834,48 @@ VISOR.modulo = {
         benches.push([cx - .05, cyy, z, -1]);
       }
     }
+  }
+  /* ---- planta baja interior del salón (acomodo 05-nov-2026; la barra de acceso y la banca con jardinera del vestíbulo no se tocan) ----
+     Circulaciones: eje acceso -> corrediza central del cancel (x 51.29–53.69) libre en todo el fondo; galería transversal de ≈1.8 bajo el borde del mezzanine
+     que une la puerta de baños M, el eje, la mesa alta, el arranque de la escalera y la puerta de baños H; pasos de 1.0 alineados con las corredizas de los extremos.
+     Zonas: bajo el mezzanine (2.75 libres, vista a canchas) 4 mesas de 4; doble altura poniente: banca corrida tapizada contra el muro norte con lambrín de duela,
+     3 mesas de 4 y lámparas colgantes; doble altura oriente: mesa alta comunal de 6 con colgante; jardinera bajo la escalera. */
+  { const zP = NV.piso, sillaM = MB.black;
+    const chair = (ax, ay, tx, ty) => { const g = new THREE.Group(); g.position.copy(V(ax, ay, zP)); g.rotation.y = headTo(tx - ax, ty - ay);
+      const s1 = new THREE.Mesh(new THREE.BoxGeometry(.44, .05, .44), sillaM); s1.position.y = .45; s1.castShadow = true; g.add(s1);
+      const s2 = new THREE.Mesh(new THREE.BoxGeometry(.44, .40, .04), sillaM); s2.position.set(0, .68, -.2); s2.castShadow = true; g.add(s2);
+      for (const [lx, lz] of [[-.19, -.19], [.19, -.19], [-.19, .19], [.19, .19]]){ const l = new THREE.Mesh(new THREE.BoxGeometry(.03, .45, .03), sillaM); l.position.set(lx, .225, lz); g.add(l); }
+      root.add(g); };
+    const mesaR = (x0, y0, x1, y1, h = .76) => { box(root, x0, y0, x1, y1, zP + h - .04, zP + h, [MB.wood, MB.woodDark, MB.woodDark]);
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; box(root, cx - .04, cy - .04, cx + .04, cy + .04, zP, zP + h - .04, MB.steel, { cast:false }); box(root, cx - .25, cy - .2, cx + .25, cy + .2, zP, zP + .02, MB.steel, { cast:false }); };
+    // 1) bajo el mezzanine: 4 mesas cuadradas de 0.80 para 4, en una fila paralela al cancel; pasos de 1.0 frente a las hojas corredizas de los extremos
+    for (const tx of [48.15, 50.25, 54.724, 56.824]){ const ty = 1.85; mesaR(tx - .4, ty - .4, tx + .4, ty + .4);
+      const ch = [[tx, ty - .58], [tx, ty + .58], [tx - .58, ty], [tx + .58, ty]]; ch.forEach(([ax, ay]) => chair(ax, ay, tx, ty)); tables.push({ x:tx, y:ty, z:zP, chairs:ch }); }
+    // 2) doble altura poniente: banca corrida tapizada (asiento 0.45, respaldo 0.95) contra el muro norte, x 44.342–49.10, con lambrín de duela hasta 2.70
+    const yW = 6.301, xb0 = 44.342, xb1 = 49.10;
+    box(root, xb0, yW - .50, xb1, yW, zP, zP + .10, MB.woodDark, { cast:false });
+    box(root, xb0, yW - .50, xb1, yW - .02, zP + .10, zP + .45, B(M.fabric));
+    box(root, xb0, yW - .14, xb1, yW - .02, zP + .45, zP + .95, B(M.fabric));
+    box(root, xb0, yW - .02, xb1 + .135, yW, zP + .95, zP + 2.70, MB.wood, { cast:false });
+    for (const tx of [45.30, 46.85, 48.40]){ const ty = 5.375; mesaR(tx - .55, ty - .375, tx + .55, ty + .375);
+      const ch = [[tx - .27, ty - .62], [tx + .27, ty - .62]]; ch.forEach(([ax, ay]) => chair(ax, ay, ax, ty));
+      tables.push({ x:tx, y:ty, z:zP, chairs:[...ch, [tx - .27, yW - .30], [tx + .27, yW - .30]] }); }
+    // 3) doble altura oriente: mesa alta comunal 1.80 x 0.80 a h 1.05 con 6 bancos altos
+    { const x0 = 54.10, x1 = 55.90, y0 = 4.35, y1 = 5.15, h = 1.05;
+      box(root, x0, y0, x1, y1, zP + h - .05, zP + h, [MB.wood, MB.woodDark, MB.woodDark]);
+      for (const xx of [x0 + .2, x1 - .2]) box(root, xx - .04, y0 + .15, xx + .04, y1 - .15, zP, zP + h - .05, MB.steel);
+      box(root, x0 + .2, (y0 + y1) / 2 - .02, x1 - .2, (y0 + y1) / 2 + .02, zP + .25, zP + .29, MB.steel, { cast:false });
+      for (const xx of [54.40, 55.00, 55.60]) for (const [yy, d] of [[y0 - .40, 1], [y1 + .40, -1]]){
+        cyl(root, xx, yy, zP, zP + .70, .028, .028, MB.steel, 8); cyl(root, xx, yy, zP + .70, zP + .75, .19, .19, MB.black, 14);
+        mezzSeats.push([xx, yy, zP + .28, 'stool', 0, d, (xx === 54.40 && d > 0) || (xx === 55.60 && d < 0) || (xx === 55.00 && d > 0)]); } }
+    // 4) jardinera baja bajo la escalera, donde la rampa ya deja altura (x >= 58.4)
+    box(root, 58.40, 5.40, 59.55, 6.25, zP, zP + .40, [M.cap, MB.aplanado, MB.aplanado]); surf(root, rect(58.45, 5.45, 59.50, 6.20), [], zP + .36, M.soilDark);
+    for (const [x, y, r] of [[58.70, 5.80, .30], [59.20, 5.65, .24], [59.25, 6.00, .26]]){ const c = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), M.leaf); c.position.copy(V(x, y, zP + .40 + r * .8)); c.scale.y = 1.3; c.castShadow = true; root.add(c); }
+    // 5) lámparas colgantes desde la losa de techo en la doble altura (en roofs, como las de techo, para que no floten al quitar techos)
+    const pendM = new THREE.MeshStandardMaterial({ color:0x2a2a28, roughness:.5, metalness:.4 }), bulbM = new THREE.MeshStandardMaterial({ color:0xfff4e0, emissive:0xffd9a0, emissiveIntensity:0, roughness:.4 }); emis.push(bulbM);
+    for (const [x, y, zb] of [[45.30, 5.375, 2.15], [46.85, 5.375, 2.15], [48.40, 5.375, 2.15], [55.00, 4.75, 2.35]]){
+      cyl(roofs, x, y, zP + zb + .30, NV.salonMuro - .15, .006, .006, pendM, 4);
+      cyl(roofs, x, y, zP + zb, zP + zb + .30, .24, .05, pendM, 20); cyl(roofs, x, y, zP + zb - .01, zP + zb + .01, .2, .2, bulbM, 20); }
   }
   for (const sb of sombras){ const z = zPl((sb[1] + sb[3]) / 2), H = z + 2.7;   // sombra sobre la banca (proyección del DXF)
     for (const yy of [sb[1] + .15, sb[3] - .15]) cyl(root, (sb[0] + sb[2]) / 2, yy, z, H, .05, .05, M.steel, 10);
@@ -1153,7 +1207,10 @@ const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(4, 4, 
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.12, 0.35, 1.0); composer.addPass(bloom);
 composer.addPass(new OutputPass());
-function renderScene(){ if (QUALITY[quality].post) composer.render(); else renderer.render(scene, camera); }
+// personas: no se recortan con el plano de corte; se ocultan completas si sus pies quedan arriba del nivel de corte
+const PERS = [], _vP = new THREE.Vector3();
+function cutPeople(){ const on = CLIP.length > 0, cz = cutPlane.constant; for (const g of PERS) g.visible = !on || g.getWorldPosition(_vP).y < cz - .05; }
+function renderScene(){ cutPeople(); if (QUALITY[quality].post) composer.render(); else renderer.render(scene, camera); }
 const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.ShaderMaterial({
   side:THREE.BackSide, depthWrite:false, fog:false,
   uniforms:{ cTop:{ value:col('#5f8fc2') }, cMid:{ value:col('#a9c3da') }, cHor:{ value:HORIZON.clone() }, uSun:{ value:sunDir }, uSunK:{ value:1 } },
@@ -1408,7 +1465,7 @@ function makeLabel(text, size = 1.35){
 const SHIRTS = ['#c94f4f', '#3f7fbf', '#e8c547', '#5aa469', '#f2f0ea', '#8a5fbf', '#e07b39', '#2a9d8f', '#d96c9b', '#f4f1e8'];
 const PANTS = ['#2f3a4a', '#4a5a6a', '#d8d2c4', '#1f2a36', '#6b4f3a', '#f2f0ea'];
 const SKIN = ['#e0b48f', '#b98a66', '#8d6446', '#c79a74', '#6f4e37'], HAIR = ['#2b1d14', '#5a3a22', '#1a1a1a', '#a6774a', '#d9b26b'];
-const PM = new Map(); const pmat = c => { let m = PM.get(c); if (!m){ m = B(std(c, .8)); PM.set(c, m); } return m; };
+const PM = new Map(); const pmat = c => { let m = PM.get(c); if (!m){ m = std(c, .8); PM.set(c, m); } return m; };   // sin clippingPlanes: ver cutPeople()
 function person(parent, r0, kind = 'p'){
   const g = new THREE.Group(); const pick = a => a[Math.floor(r0() * a.length)];
   const mk = (grp, geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; grp.add(m); return m; };
@@ -1427,6 +1484,7 @@ function person(parent, r0, kind = 'p'){
   const racket = new THREE.Group(); mk(racket, new THREE.CylinderGeometry(.015, .015, .28, 6), pmat('#222222'), 0, -.72, 0);
   const rh = mk(racket, new THREE.TorusGeometry(.13, .014, 6, 16), pmat(pick(['#c94f4f', '#2d5f8e', '#222222', '#e8c547'])), 0, -1.0, 0); rh.scale.set(1, 1.25, 1);
   armR.add(racket); racket.visible = false;
+  g.userData.person = true; PERS.push(g);
   parent.add(g); return { g, hips, legL, legR, torso, armL, armR, racket };
 }
 function pose(w, a, ph, sw = 0){
