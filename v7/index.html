@@ -581,10 +581,13 @@ VISOR.modulo = {
   tag('canceleria', 'pop');
   { // cancelería del mezzanine: ventanal sur sobre la línea de postes y cristales en los costados del tramo volado
     const gz0 = NV.mezz, gz1 = NV.salonMuro - .15;
-    const run = (a, b, step) => { quad(root, a, b, gz0, gz1, MB.glass); const L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.round(L / step));
+    const run = (a, b, step, gz0 = NV.mezz) => { quad(root, a, b, gz0, gz1, MB.glass); const L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.round(L / step));
       for (let i = 0; i <= n; i++){ const x = lerp(a[0], b[0], i / n), y = lerp(a[1], b[1], i / n); box(root, x - .03, y - .03, x + .03, y + .03, gz0, gz1, MB.steel, { cast:false }); }
       seg(root, a, b, gz0, gz0 + .08, .07, MB.steel, false); seg(root, a, b, gz1 - .06, gz1, .07, MB.steel, false); seg(root, a, b, gz0 + 1.05, gz0 + 1.1, .06, MB.steel, false); };
-    run([S[0] + .02, S[1] + .06], [S[2] - .02, S[1] + .06], 1.25);
+    // frente sur: antepecho macizo de 0.15 hasta la barra (h 1.00, rigidiza el frente) y ventanal solo de la barra hacia arriba
+    box(root, S[0], S[1], S[2], S[1] + .15, NV.mezz, NV.mezz + 1.0, [MB.aplanadoExt, MB.aplanadoExt, MB.aplanadoExt]);
+    tag('mamposteria', 'grow');
+    run([S[0] + .02, S[1] + .06], [S[2] - .02, S[1] + .06], 1.25, NV.mezz + 1.05);
     const ys = fach ? fach[1] : S[1] + 2;
     run([S[0] + .075, S[1] + .12], [S[0] + .075, ys], 1.0); run([S[2] - .075, S[1] + .12], [S[2] - .075, ys], 1.0);
     tag('canceleria', 'pop');
@@ -645,11 +648,10 @@ VISOR.modulo = {
     const px = G.columnas.map(c => bboxOf(c.p)).filter(b => Math.abs(b[1] - yP) < .05).map(b => [b[0], b[2]]).sort((a, b) => a[0] - b[0]);   // postes del frente (y −1.379)
     const tramos = []; { let xa = S[0] + .15; for (const [a, b] of px){ if (a > xa + .5) tramos.push([xa, a]); xa = Math.max(xa, b); } if (S[2] - .15 > xa + .5) tramos.push([xa, S[2] - .15]); }
     tramos.forEach(([a, b], ti) => {
-      box(root, a, yP + .10, b, yP + .45, bz + 1.0, bz + 1.05, [MB.wood, MB.woodDark, MB.woodDark]);                      // barra-repisa 0.35 a h 1.05
-      box(root, a, yP + .10, b, yP + .13, bz + .90, bz + 1.0, MB.woodDark, { cast:false });
-      for (let x = a + .3; x < b - .1; x += 1.2) box(root, x - .015, yP + .12, x + .015, yP + .40, bz + .86, bz + 1.0, MB.steel, { cast:false });   // ménsulas
+      box(root, a, yP + .05, b, yP + .50, bz + 1.0, bz + 1.05, [MB.wood, MB.woodDark, MB.woodDark]);                      // barra-repisa sobre el antepecho, vuela 0.35 al interior, h 1.05
+      for (let x = a + .3; x < b - .1; x += 1.2) box(root, x - .015, yP + .15, x + .015, yP + .45, bz + .86, bz + 1.0, MB.steel, { cast:false });   // ménsulas
       const n = 8, x0s = (a + b) / 2 - (n - 1) * .3;
-      for (let i = 0; i < n; i++){ const x = x0s + i * .6, y = yP + .67;                                                 // 8 bancos altos por tramo, a cada 0.60
+      for (let i = 0; i < n; i++){ const x = x0s + i * .6, y = yP + .74;                                                 // 8 bancos altos por tramo, a cada 0.60
         cyl(root, x, y, bz, bz + .70, .028, .028, MB.steel, 8); cyl(root, x, y, bz + .70, bz + .75, .19, .19, MB.black, 14); cyl(root, x, y + .1, bz + .26, bz + .285, .12, .015, MB.steel, 12);
         mezzSeats.push([x, y, bz + .28, 'stool', 0, -1, (i + ti) % 4 === 1]); }
     });
@@ -980,7 +982,7 @@ VISOR.modulo = {
     addP('p', (t, w) => { placeP(w, (b[0] + b[2]) / 2 - .9, b[1] - .45, NV.deck, headTo(0, 1)); pose(w, 'lean', t * .4); });
     addP('p', (t, w) => { placeP(w, (b[0] + b[2]) / 2 + .4, b[1] - .55, NV.deck, headTo(-.3, 1)); pose(w, 'talk', t * .45 + .3); }); }
   [[C.gimnasio, 3], [C.snacks, 2]].forEach(([b, n], j) => { for (let k = 0; k < n; k++){ const x = lerp(b[0] + 1.2, b[2] - 1.2, (k + .5) / n), y = b[1] - 0.45; P.push({ w:person(roofs, r0), upd:(t, w) => { placeP(w, x, y, NV.terraza + .04, headTo(0, -1)); pose(w, k % 2 ? 'talk' : 'lean', t * .4 + k); } }); } });
-  mezzSeats.forEach(([x, y, z, kind, dx, dy, occ], i) => { if (!occ) return; addP('p', (t, w) => { placeP(w, x, y, z, headTo(dx, dy)); pose(w, 'sit', t * .3 + i * .21); }); });   // papás en la barra (canchas), los sofás y frente a las TV
+  mezzSeats.forEach(([x, y, z, kind, dx, dy, occ], i) => { if (!occ) return; addP('p', (t, w) => { placeP(w, x, y, z, headTo(dx, dy)); pose(w, 'sit', t * .3 + i * .21); if (kind === 'stool'){ w.legL.rotation.x = -.62; w.legR.rotation.x = -.5; } }); });   // papás en la barra (canchas), los sofás y frente a las TV
   if (mz) addP('p', (t, w) => { placeP(w, mz[0] + 8.1, mzN - .5, NV.mezz, headTo(0, 1)); pose(w, 'lean', t * .4); });
   const walkLine = (a, b, sp, off, z = NV.plaza + .03) => addP('p', (t, w) => { const L = Math.hypot(b[0] - a[0], b[1] - a[1]), c = ((t * sp / L + off) % 1 + 1) % 1, go = c < .5, f = go ? c * 2 : 2 - c * 2; const x = lerp(a[0], b[0], f), y = lerp(a[1], b[1], f); placeP(w, x, y, z, go ? headTo(b[0] - a[0], b[1] - a[1]) : headTo(a[0] - b[0], a[1] - b[1])); pose(w, 'walk', f * L / 1.3); });
   walkLine([C.gimnasio[2] + .6, -1.0], [S[0] - .3, -1.0], 1.1, 0);
