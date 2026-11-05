@@ -585,11 +585,14 @@ VISOR.modulo = {
       for (let i = 0; i <= n; i++){ const x = lerp(a[0], b[0], i / n), y = lerp(a[1], b[1], i / n); box(root, x - .03, y - .03, x + .03, y + .03, gz0, gz1, MB.steel, { cast:false }); }
       seg(root, a, b, gz0, gz0 + .08, .07, MB.steel, false); seg(root, a, b, gz1 - .06, gz1, .07, MB.steel, false); seg(root, a, b, gz0 + 1.05, gz0 + 1.1, .06, MB.steel, false); };
     // frente sur: antepecho macizo de 0.15 hasta la barra (h 1.00, rigidiza el frente) y ventanal solo de la barra hacia arriba
-    box(root, S[0], S[1], S[2], S[1] + .15, NV.mezz, NV.mezz + 1.0, [MB.aplanadoExt, MB.aplanadoExt, MB.aplanadoExt]);
+    const apM = [MB.aplanadoExt, MB.aplanadoExt, MB.aplanadoExt], ysL = fach ? fach[1] : S[1] + 2;
+    box(root, S[0] + .005, S[1] + .005, S[2] - .005, S[1] + .145, NV.mezz, NV.mezz + 1.0, apM);
+    box(root, S[0] + .005, S[1] + .145, S[0] + .145, ysL - .005, NV.mezz, NV.mezz + 1.0, apM);   // costados del volado: mismo antepecho hasta h 1.00
+    box(root, S[2] - .145, S[1] + .145, S[2] - .005, ysL - .005, NV.mezz, NV.mezz + 1.0, apM);
     tag('mamposteria', 'grow');
     run([S[0] + .02, S[1] + .06], [S[2] - .02, S[1] + .06], 1.25, NV.mezz + 1.05);
     const ys = fach ? fach[1] : S[1] + 2;
-    run([S[0] + .075, S[1] + .12], [S[0] + .075, ys], 1.0); run([S[2] - .075, S[1] + .12], [S[2] - .075, ys], 1.0);
+    run([S[0] + .075, S[1] + .12], [S[0] + .075, ys], 1.0, NV.mezz + 1.05); run([S[2] - .075, S[1] + .12], [S[2] - .075, ys], 1.0, NV.mezz + 1.05);
     tag('canceleria', 'pop');
     box(root, S[0], S[1], S[2], S[1] + .12, NV.mezz - .25, NV.mezz, [MB.aplanadoExt, MB.aplanadoExt, MB.aplanadoExt]);   // canto de losa
   }
@@ -639,7 +642,8 @@ VISOR.modulo = {
     // barandal de cristal templado h 1.05 en el borde norte hacia la doble altura; libre la llegada de la escalera (x 59.63 a 60.63)
     const railG = (a, b, z, h = 1.05) => { quad(root, a, b, z + .05, z + h - .05, MB.glass); seg(root, a, b, z + h - .05, z + h, .05, MB.steel, false); seg(root, a, b, z, z + .06, .06, MB.steel, false);
       for (const [p] of splitSeg(a, b, 1.2)) box(root, p[0] - .025, p[1] - .025, p[0] + .025, p[1] + .025, z, z + h, MB.steel, { cast:false }); box(root, b[0] - .025, b[1] - .025, b[0] + .025, b[1] + .025, z, z + h, MB.steel, { cast:false }); };
-    railG([mz[0], mzN - .03], [mz[2], mzN - .03], NV.mezz, 1.20);   // h 1.20 (se subió al llevar la plataforma de 0.20 a los sillones)
+    const PZ = NV.mezz + .20, PX1 = 59.43;   // plataforma de 0.20: el barandal arranca sobre ella con 1.20; en el rellano de la escalera (losa) sube a 1.40 para rematar igual
+    railG([mz[0], mzN - .03], [PX1, mzN - .03], PZ, 1.20); railG([PX1, mzN - .03], [mz[2], mzN - .03], NV.mezz, 1.40);
     tag('canceleria', 'pop');
     /* lounge familiar (DXF 04-11, detalle "PLANTA MEZZANINE N+3.00"): barra-repisa corrida al frente sur interrumpida en los postes con 24 bancos, 3 sofás de 2 plazas con
        mesa de centro mirando al sur y zona TV en el muro poniente (2 TV de 65" a 1.20, sofá de 3 plazas y 2 sillones mirando al poniente). Coordenadas del plano (y_rel). */
@@ -662,24 +666,26 @@ VISOR.modulo = {
     const mesaC = (x0, y0, x1, y1, bz = NV.mezz) => { box(root, x0, y0, x1, y1, bz + .38, bz + .42, [MB.wood, MB.woodDark, MB.woodDark]); for (const [x, y] of [[x0 + .05, y0 + .05], [x1 - .05, y0 + .05], [x0 + .05, y1 - .05], [x1 - .05, y1 - .05]]) box(root, x - .02, y - .02, x + .02, y + .02, bz, bz + .38, MB.steel, { cast:false }); };
     // lounge central: 3 sofás de 2 plazas 1.80 × 0.85 (respaldo en y 2.75) con mesa de centro 1.00 × 0.50, mirando al sur
     // plataforma de 0.20 para los sillones del lounge (ven por encima de los bancos de la barra hacia las canchas); nariz con tira LED; libre >= 0.77 a la zona TV y 0.90 al barandal
-    const pz = bz + .20, px0 = 50.05, px1 = 57.65, py0 = 1.05, py1 = 2.80;
+    // corrida de muro a muro (incluye la zona TV y su mueble) de y 0.65 al barandal; solo queda a nivel de losa el rellano de llegada de la escalera (x 59.43 a 60.63)
+    const pz = PZ, px0 = S[0] + .15, px1 = PX1, py0 = .65, py1 = mzN;
     box(root, px0, py0, px1, py1, bz, pz, [MB.wood, MB.woodDark, MB.woodDark]);
     { const ledM = new THREE.MeshStandardMaterial({ color:0xfff1d6, emissive:0xffd9a0, emissiveIntensity:0, roughness:.4 }); emis.push(ledM); const ledB = B(ledM); emis.push(ledB);
-      box(root, px0, py0 - .005, px1, py0 + .01, pz - .04, pz - .025, ledB, { cast:false }); }
+      box(root, px0, py0 - .005, px1, py0 + .01, pz - .04, pz - .025, ledB, { cast:false });
+      box(root, px1 - .01, py0, px1 + .005, py1, pz - .04, pz - .025, ledB, { cast:false }); }
     [50.20, 52.95, 55.70].forEach((sx, i) => { const sy1 = 2.75, sy0 = sy1 - .85; sofa(sx, sy0, sx + 1.8, sy1, 'S', pz); mesaC(sx + .4, 1.20, sx + 1.4, 1.70, pz);
       for (const [k, dx] of [[0, .45], [1, 1.35]]) mezzSeats.push([sx + dx, sy1 - .5, pz + .02, 'sofa', 0, -1, (i === 0 && k === 0) || (i === 1 && k === 1) || i === 2]); });
     // zona TV (muro poniente x 44.342, y 0.62 a 3.70): 2 pantallas de 65" (1.44 × 0.81) a 1.20 del piso, sofá de 3 plazas y 2 sillones mirando al poniente, mesa de centro
-    for (const [ya, yb] of [[0.701, 2.141], [2.181, 3.621]]){ const xw = S[0] + .15; box(root, xw, ya, xw + .07, yb, bz + 1.20, bz + 2.01, tvB); box(root, xw + .005, ya + .03, xw + .075, yb - .03, bz + 1.23, bz + 1.98, tvB); }
+    for (const [ya, yb] of [[0.701, 2.141], [2.181, 3.621]]){ const xw = S[0] + .15; box(root, xw, ya, xw + .07, yb, pz + 1.20, pz + 2.01, tvB); box(root, xw + .005, ya + .03, xw + .075, yb - .03, pz + 1.23, pz + 1.98, tvB); }
     // mueble de TV bajo las pantallas: credenza de 0.45 x 2.92 a h 0.55 (cubierta de madera, frentes oscuros, zoclo remetido)
     { const xw = S[0] + .15, ya = .70, yb = 3.62;
-      box(root, xw, ya, xw + .45, yb, bz + .12, bz + .52, [MB.woodDark, MB.woodDark, MB.woodDark]);
-      box(root, xw, ya - .01, xw + .46, yb + .01, bz + .52, bz + .55, [MB.wood, MB.wood, MB.wood]);
-      box(root, xw, ya + .05, xw + .38, yb - .05, bz, bz + .12, MB.black, { cast:false });
-      for (let k = 1; k < 4; k++){ const y = lerp(ya, yb, k / 4); box(root, xw + .45, y - .004, xw + .455, y + .004, bz + .14, bz + .50, MB.black, { cast:false }); } }
-    const xS = 48.43, yc = 2.141; sofa(xS, yc - 1.025, xS + .85, yc + 1.025, 'W'); mesaC(47.43, yc - .25, 48.33, yc + .25);
-    sofa(47.43, yc - .25 - .1 - .70, 48.13, yc - .25 - .1, 'W'); sofa(47.43, yc + .25 + .1, 48.13, yc + .25 + .1 + .70, 'W');
-    [[yc - .68, true], [yc, false], [yc + .68, true]].forEach(([y, o]) => mezzSeats.push([xS + .38, y, bz + .02, 'sofa', -1, 0, o]));
-    mezzSeats.push([47.85, yc - .25 - .1 - .35, bz + .02, 'sofa', -1, 0, false], [47.85, yc + .25 + .1 + .35, bz + .02, 'sofa', -1, 0, true]);
+      box(root, xw, ya, xw + .45, yb, pz + .12, pz + .52, [MB.woodDark, MB.woodDark, MB.woodDark]);
+      box(root, xw, ya - .01, xw + .46, yb + .01, pz + .52, pz + .55, [MB.wood, MB.wood, MB.wood]);
+      box(root, xw, ya + .05, xw + .38, yb - .05, pz, pz + .12, MB.black, { cast:false });
+      for (let k = 1; k < 4; k++){ const y = lerp(ya, yb, k / 4); box(root, xw + .45, y - .004, xw + .455, y + .004, pz + .14, pz + .50, MB.black, { cast:false }); } }
+    const xS = 48.43, yc = 2.141; sofa(xS, yc - 1.025, xS + .85, yc + 1.025, 'W', pz); mesaC(47.43, yc - .25, 48.33, yc + .25, pz);
+    sofa(47.43, yc - .25 - .1 - .70, 48.13, yc - .25 - .1, 'W', pz); sofa(47.43, yc + .25 + .1, 48.13, yc + .25 + .1 + .70, 'W', pz);
+    [[yc - .68, true], [yc, false], [yc + .68, true]].forEach(([y, o]) => mezzSeats.push([xS + .38, y, pz + .02, 'sofa', -1, 0, o]));
+    mezzSeats.push([47.85, yc - .25 - .1 - .35, pz + .02, 'sofa', -1, 0, false], [47.85, yc + .25 + .1 + .35, pz + .02, 'sofa', -1, 0, true]);
   }
   tag('interiores', 'pop');
   // techo plano ligero a +6.00 con pretil: cubre salón, mezzanine y deck hasta la línea de postes
@@ -857,7 +863,7 @@ VISOR.modulo = {
     box(root, xb0, yW - .50, xb1, yW - .02, zP + .10, zP + .45, B(M.fabric));
     box(root, xb0, yW - .14, xb1, yW - .02, zP + .45, zP + .95, B(M.fabric));
     box(root, xb0, yW - .02, xb1 + .135, yW, zP + .95, zP + 2.70, MB.wood, { cast:false });
-    for (const tx of [45.30, 46.85, 48.40]){ const ty = 5.375; mesaR(tx - .55, ty - .375, tx + .55, ty + .375);
+    for (const tx of [46.05, 47.35, 48.65]){ const ty = 5.375; mesaR(tx - .5, ty - .375, tx + .5, ty + .375);   // primera silla a ≈0.40 de la jamba de baños M
       const ch = [[tx - .27, ty - .62], [tx + .27, ty - .62]]; ch.forEach(([ax, ay]) => chair(ax, ay, ax, ty));
       tables.push({ x:tx, y:ty, z:zP, chairs:[...ch, [tx - .27, yW - .30], [tx + .27, yW - .30]] }); }
     // 3) doble altura oriente: mesa alta comunal 1.80 x 0.80 a h 1.05 con 6 bancos altos
@@ -873,7 +879,7 @@ VISOR.modulo = {
     for (const [x, y, r] of [[58.70, 5.80, .30], [59.20, 5.65, .24], [59.25, 6.00, .26]]){ const c = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), M.leaf); c.position.copy(V(x, y, zP + .40 + r * .8)); c.scale.y = 1.3; c.castShadow = true; root.add(c); }
     // 5) lámparas colgantes desde la losa de techo en la doble altura (en roofs, como las de techo, para que no floten al quitar techos)
     const pendM = new THREE.MeshStandardMaterial({ color:0x2a2a28, roughness:.5, metalness:.4 }), bulbM = new THREE.MeshStandardMaterial({ color:0xfff4e0, emissive:0xffd9a0, emissiveIntensity:0, roughness:.4 }); emis.push(bulbM);
-    for (const [x, y, zb] of [[45.30, 5.375, 2.15], [46.85, 5.375, 2.15], [48.40, 5.375, 2.15], [55.00, 4.75, 2.35]]){
+    for (const [x, y, zb] of [[46.05, 5.375, 2.15], [47.35, 5.375, 2.15], [48.65, 5.375, 2.15], [55.00, 4.75, 2.35]]){
       cyl(roofs, x, y, zP + zb + .30, NV.salonMuro - .15, .006, .006, pendM, 4);
       cyl(roofs, x, y, zP + zb, zP + zb + .30, .24, .05, pendM, 20); cyl(roofs, x, y, zP + zb - .01, zP + zb + .01, .2, .2, bulbM, 20); }
   }
@@ -938,9 +944,15 @@ VISOR.modulo = {
     } }
 
   /* ---- estacionamiento: cajones marcados y topes ---- */
+  const lineD = M.line.clone(); lineD.side = THREE.DoubleSide;
   for (const c of G.estacionamiento){ const b = bboxOf(c.p), ym = (b[1] + b[3]) / 2, xm = (b[0] + b[2]) / 2;
+    if (c.p.length === 2){ const [p0, p1] = c.p;   // raya diagonal del pasillo accesible: franja plana de 0.10 pegada al piso
+      const dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy), nx = -dy / L * .05, ny = dx / L * .05;
+      const g = new THREE.BufferGeometry(); const v = [[p0[0] + nx, p0[1] + ny], [p1[0] + nx, p1[1] + ny], [p1[0] - nx, p1[1] - ny], [p0[0] - nx, p0[1] - ny]].map(([x, y]) => V(x, y, zG(x, y) + .034));
+      g.setAttribute('position', new THREE.Float32BufferAttribute(v.flatMap(q => [q.x, q.y, q.z]), 3)); g.setIndex([0, 2, 1, 0, 3, 2]); g.computeVertexNormals();
+      const m = new THREE.Mesh(g, lineD); m.receiveShadow = true; root.add(m); continue; }
     box(root, b[0] - .05, b[1], b[0] + .05, b[3], zG(b[0], ym), zG(b[0], ym) + .03, M.line, { cast:false }); box(root, b[2] - .05, b[1], b[2] + .05, b[3], zG(b[2], ym), zG(b[2], ym) + .03, M.line, { cast:false });
-    box(root, xm - .8, b[1] + .55, xm + .8, b[1] + .7, zG(xm - .8, b[1] + .6) - .02, zG(xm, b[1] + .6) + .12, M.conc); }
+    if (b[2] - b[0] >= 2.2) box(root, xm - .8, b[1] + .55, xm + .8, b[1] + .7, zG(xm - .8, b[1] + .6) - .02, zG(xm, b[1] + .6) + .12, M.conc); }
   tag('exteriores', 'pop');
 
   /* ---- rampa entre la plancha de canchas y la franja social (escalón de 0.17 m en y_franja) ----
@@ -1037,7 +1049,7 @@ VISOR.modulo = {
     addP('p', (t, w) => { placeP(w, (b[0] + b[2]) / 2 + .4, b[1] - .55, NV.deck, headTo(-.3, 1)); pose(w, 'talk', t * .45 + .3); }); }
   [[C.gimnasio, 3], [C.snacks, 2]].forEach(([b, n], j) => { for (let k = 0; k < n; k++){ const x = lerp(b[0] + 1.2, b[2] - 1.2, (k + .5) / n), y = b[1] - 0.45; P.push({ w:person(roofs, r0), upd:(t, w) => { placeP(w, x, y, NV.terraza + .04, headTo(0, -1)); pose(w, k % 2 ? 'talk' : 'lean', t * .4 + k); } }); } });
   mezzSeats.forEach(([x, y, z, kind, dx, dy, occ], i) => { if (!occ) return; addP('p', (t, w) => { placeP(w, x, y, z, headTo(dx, dy)); pose(w, 'sit', t * .3 + i * .21); if (kind === 'stool'){ w.legL.rotation.x = -.62; w.legR.rotation.x = -.5; } }); });   // papás en la barra (canchas), los sofás y frente a las TV
-  if (mz) addP('p', (t, w) => { placeP(w, mz[0] + 8.1, mzN - .5, NV.mezz, headTo(0, 1)); pose(w, 'lean', t * .4); });
+  if (mz) addP('p', (t, w) => { placeP(w, mz[0] + 8.1, mzN - .5, NV.mezz + .20, headTo(0, 1)); pose(w, 'lean', t * .4); });
   const walkLine = (a, b, sp, off, z = NV.plaza + .03) => addP('p', (t, w) => { const L = Math.hypot(b[0] - a[0], b[1] - a[1]), c = ((t * sp / L + off) % 1 + 1) % 1, go = c < .5, f = go ? c * 2 : 2 - c * 2; const x = lerp(a[0], b[0], f), y = lerp(a[1], b[1], f); placeP(w, x, y, z, go ? headTo(b[0] - a[0], b[1] - a[1]) : headTo(a[0] - b[0], a[1] - b[1])); pose(w, 'walk', f * L / 1.3); });
   walkLine([C.gimnasio[2] + .6, -1.0], [S[0] - .3, -1.0], 1.1, 0);
   walkLine([S[2] + .4, -1.1], [C.snacks[0] - .4, -1.1], 1.0, .4);
@@ -1153,7 +1165,7 @@ function clipConvex(poly, win){ let r = poly; for (const f of winFns(win)){ r = 
 const canvas = $('scene');
 // celulares y tabletas (iPhone/iPad incluidos): Safari en iOS tiene poca memoria gráfica y cierra la página si se excede
 const MOVIL = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:!MOVIL });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, preserveDrawingBuffer:!MOVIL, logarithmicDepthBuffer:true });   // profundidad logarítmica: sin parpadeo entre caras cercanas en GPUs móviles
 canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); try { localStorage.setItem(SLUG + '-calidad', 'ligera'); } catch (_) {}
   const L = $('loading'); L.hidden = false; delete L.dataset.falla; if (window.__visorFalla) window.__visorFalla('El dispositivo se quedó sin memoria gráfica. Recarga: el modelo se abrirá en calidad ligera.'); });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1214,9 +1226,16 @@ function renderScene(){ cutPeople(); if (QUALITY[quality].post) composer.render(
 const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.ShaderMaterial({
   side:THREE.BackSide, depthWrite:false, fog:false,
   uniforms:{ cTop:{ value:col('#5f8fc2') }, cMid:{ value:col('#a9c3da') }, cHor:{ value:HORIZON.clone() }, uSun:{ value:sunDir }, uSunK:{ value:1 } },
-  vertexShader:`varying vec3 vW; void main(){ vW = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-  fragmentShader:`uniform vec3 cTop; uniform vec3 cMid; uniform vec3 cHor; uniform vec3 uSun; uniform float uSunK; varying vec3 vW;
-  void main(){ vec3 d = normalize(vW); float h = d.y;
+  vertexShader:`#include <common>
+  #include <logdepthbuf_pars_vertex>
+  varying vec3 vW; void main(){ vW = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+  #include <logdepthbuf_vertex>
+  }`,
+  fragmentShader:`#include <logdepthbuf_pars_fragment>
+  uniform vec3 cTop; uniform vec3 cMid; uniform vec3 cHor; uniform vec3 uSun; uniform float uSunK; varying vec3 vW;
+  void main(){
+    #include <logdepthbuf_fragment>
+    vec3 d = normalize(vW); float h = d.y;
     vec3 c = mix(cHor, cMid, smoothstep(0.0, 0.2, h)); c = mix(c, cTop, smoothstep(0.2, 0.8, h));
     if (h < 0.0) c = cHor;
     float s = max(dot(d, normalize(uSun)), 0.0);
