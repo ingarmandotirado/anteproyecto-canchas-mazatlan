@@ -464,7 +464,8 @@ VISOR.modulo = {
       const z0 = Math.min(zPd(cl.a[1]), zPd(cl.b[1])); quad(root, cl.a, cl.b, z0, z0 + NV.padelMallaLat, M.malla); seg(root, cl.a, cl.b, z0 + NV.padelMallaLat - .04, z0 + NV.padelMallaLat, .05, M.black, false);
       addPost(cl.a, NV.padelMallaLat); addPost(cl.b, NV.padelMallaLat); continue;
     }
-    const zb = Math.min(zPl(Math.min(cl.a[1], cl.b[1])), zPl(my)), Hm = zb + NV.murete, H = zb + (cl.hor ? NV.rejaFondo : NV.rejaLat);
+    const divisoria = !cl.hor && mx > 35 && mx < 70;   // cercos interiores entre canchas: una sola hilada de block al piso y el resto malla
+    const zb = Math.min(zPl(Math.min(cl.a[1], cl.b[1])), zPl(my)), Hm = zb + (divisoria ? .20 : NV.murete), H = zb + (cl.hor ? NV.rejaFondo : NV.rejaLat);
     seg(root, cl.a, cl.b, zb - .1, Hm, .15, M.block);
     quad(root, cl.a, cl.b, Hm, H, M.malla);
     seg(root, cl.a, cl.b, H - .05, H, .05, M.green, false);
@@ -971,14 +972,14 @@ VISOR.modulo = {
     box(root, 54.319, 1.50, 55.009, 3.701, zP + .72, zP + .76, [MB.wood, MB.woodDark, MB.woodDark]); for (const yp of [2.10, 3.10]){ box(root, 54.62, yp - .04, 54.70, yp + .04, zP, zP + .72, MB.steel, fr); box(root, 54.40, yp - .25, 54.92, yp + .25, zP, zP + .02, MB.steel, fr); }
     tables.push({ x:54.664, y:2.6, z:zP, chairs:[[54.0, 2.05], [54.0, 3.15], [55.33, 2.05], [55.33, 3.15]] });
     // futbolito 1.40 × 0.75 al centro de la doble altura (DXF rev2: 51.787–53.187 × 4.275–5.025, eje largo oriente-poniente), mesa con patas, cancha verde y 8 barras con jugadores
-    { const fx0 = 51.787, fx1 = 53.187, fy0 = 4.275, fy1 = 5.025, zT = zP + .85, cxF = (fx0 + fx1) / 2, wood = MB.woodDark;
+    { const fx0 = 47.70, fx1 = 49.10, fy0 = 4.275, fy1 = 5.025,   /* rev3: recorrido al poniente (x 48.40) para que no se vea desde la entrada */  zT = zP + .85, cxF = (fx0 + fx1) / 2, wood = MB.woodDark;
       const verde = B(std('#2f7d3a', .85)), rojo = B(std('#b8322a', .6)), azul = B(std('#2a5db0', .6)), cromo = MB.steel;
       box(root, fx0, fy0, fx1, fy1, zT - .12, zT - .02, wood); box(root, fx0 + .04, fy0 + .04, fx1 - .04, fy1 - .04, zT - .02, zT, verde, fr);          // cuerpo y cancha
       for (const [a, b, c, d] of [[fx0, fy0, fx1, fy0 + .04], [fx0, fy1 - .04, fx1, fy1], [fx0, fy0, fx0 + .04, fy1], [fx1 - .04, fy0, fx1, fy1]]) box(root, a, b, c, d, zT - .02, zT + .10, wood);   // bordes
       for (const [lx, ly] of [[fx0 + .02, fy0 + .02], [fx1 - .09, fy0 + .02], [fx0 + .02, fy1 - .09], [fx1 - .09, fy1 - .09]]) box(root, lx, ly, lx + .07, ly + .07, zP, zT - .12, wood);   // patas
       box(root, cxF - .003, fy0 + .04, cxF + .003, fy1 - .04, zT, zT + .004, MB.white, fr); box(root, fx0 + .04, fy0 + .26, fx0 + .045, fy1 - .26, zT, zT + .004, MB.white, fr); box(root, fx1 - .045, fy0 + .26, fx1 - .04, fy1 - .26, zT, zT + .004, MB.white, fr);
       const cuantos = [1, 2, 5, 3, 3, 5, 2, 1], yc = (fy0 + fy1) / 2;
-      [51.877, 52.051, 52.225, 52.399, 52.573, 52.747, 52.921, 53.095].forEach((xr, i) => {           // barras del DXF (líneas x = 51.877 + 0.174 i, y 4.13–5.17)
+      [0, 1, 2, 3, 4, 5, 6, 7].map(i => fx0 + .09 + .174 * i).forEach((xr, i) => {           // barras del DXF (líneas x = 51.877 + 0.174 i, y 4.13–5.17)
         box(root, xr - .008, 4.13, xr + .008, 5.17, zT + .045, zT + .061, cromo, fr);                       // barra
         box(root, xr - .02, 4.13, xr + .02, 4.21, zT + .03, zT + .08, MB.black, fr); box(root, xr - .02, 5.09, xr + .02, 5.17, zT + .03, zT + .08, MB.black, fr);   // empuñaduras
         const n = cuantos[i], sep = n === 1 ? 0 : n === 2 ? .22 : n === 3 ? .20 : .125, mat = xr < cxF ? rojo : azul;
@@ -2313,7 +2314,7 @@ function loop(){
 $('selDate').value = state.date;
 
 /* ======================= v10: lotes estáticos, luces por demanda, ritmo móvil y paisaje ======================= */
-var BATCH = { on:false, items:[], groups:[] };
+var BATCH = { on:false, items:[], groups:[] }; const SIN_TL = true;   // sin proceso constructivo: las piezas originales se liberan
 function v10Paisaje(o){
   // palmeras (tronco + 9 hojas) y arbustos en las áreas libres del lote; todo se funde en los lotes estáticos
   const g = new THREE.Group(); g.name = 'paisaje';
@@ -2378,9 +2379,10 @@ function v10Lotes(o){
     geo.computeBoundingSphere(); geo.computeBoundingBox();
     const me = new THREE.Mesh(geo, L.m); me.castShadow = L.cast; me.receiveShadow = L.recv; me.matrixAutoUpdate = false; c.add(me); }
   BATCH.groups.forEach(c => c.visible = false);
+  if (SIN_TL){ for (const n of BATCH.items){ if (n.parent) n.parent.remove(n); } BATCH.items.length = 0; BATCH.groups.forEach(c => c.visible = true); BATCH.on = true; }
   console.info('v10 lotes:', BATCH.items.length, 'mallas en', lotes.size, 'lotes;', vivos.size, 'piezas animadas sin fundir');
 }
-function syncBatch(){ if (!BATCH) return; const want = !state.tl && BATCH.groups.length > 0; if (want === BATCH.on) return; BATCH.on = want;
+function syncBatch(){ if (!BATCH || SIN_TL) return; const want = !state.tl && BATCH.groups.length > 0; if (want === BATCH.on) return; BATCH.on = want;
   for (const n of BATCH.items) n.layers.set(want ? 1 : 0); for (const c of BATCH.groups) c.visible = want; renderer.shadowMap.needsUpdate = true; }
 function syncLights(){ const o = cur; if (!o) return; const tope = quality === 'ligera' ? 8 : quality === 'media' ? 16 : 99;
   const act = o.nightL.filter(([l]) => l.intensity > 1e-3).sort((a, b) => b[1] - a[1]);
@@ -2395,7 +2397,21 @@ function perfTick(){ if (!FT) return; const now = performance.now(); if (FT.t){ 
   if (FT.n < 120) return; const avg = FT.acc / FT.n; FT.n = 0; FT.acc = 0; if (exporting || state.tl) return;
   if (avg > 45 && quality !== 'ligera'){ setQuality(quality === 'alta' ? 'media' : 'ligera'); FT.salto = 60; }
   else if (MOVIL && !FT.subio && avg < 19 && quality === 'ligera'){ FT.subio = 1; setQuality('media'); FT.salto = 60; } }
-function v10Init(){ try { v10Paisaje(cur); } catch (e) { console.warn('paisaje', e); }
+function v10Menu(){
+  const st = document.createElement('style'); st.textContent = `#btnTL{display:none!important}
+#viewBar{position:fixed;left:14px;right:14px;bottom:12px;z-index:4;padding:6px 8px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;max-width:max-content;margin:0 auto}
+#viewBar::-webkit-scrollbar{display:none}
+#viewBar #views{display:flex;gap:6px;grid-template-columns:none}
+#viewBar #views button{flex:0 0 auto;white-space:nowrap;padding:6px 11px;font-size:12px;border-radius:999px;text-align:center}
+#viewBar #views button.on{box-shadow:none;background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.legend{display:none!important}
+@media (max-width:760px){ #viewBar{left:10px;right:10px;bottom:64px;padding:5px 6px} .panel{bottom:118px!important;max-height:48vh!important} }`;
+  document.head.appendChild(st);
+  const bar = document.createElement('nav'); bar.id = 'viewBar'; bar.className = 'card'; bar.setAttribute('aria-label', 'Vistas');
+  const vs = $('views'), sec = vs.closest('section'); bar.appendChild(vs); document.body.appendChild(bar); if (sec) sec.hidden = true;
+  setPanel(false);
+}
+function v10Init(){ try { v10Menu(); } catch (e) { console.warn('menu', e); } try { v10Paisaje(cur); } catch (e) { console.warn('paisaje', e); }
   try { v10Lotes(cur); } catch (e) { console.warn('lotes', e); BATCH.groups.forEach(c => c.parent && c.parent.remove(c)); BATCH.groups.length = 0; BATCH.items.forEach(n => n.layers.set(0)); BATCH.items.length = 0; }
   applyAll(); syncBatch(); }
 applyAll(); setQuality(quality); goView(VIEWS.general ? 'general' : Object.keys(VIEWS)[0], true);
