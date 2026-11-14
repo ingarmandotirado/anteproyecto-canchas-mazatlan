@@ -2339,7 +2339,8 @@ function v10Lotes(o){
   if (o.batched) return; o.batched = true;
   scene.updateMatrixWorld(true);
   const cand = [];
-  for (const g of [o.root, o.roofs]) for (const c of g.children){
+  const extra = scene.children.filter(c => c !== o.root && !c.isLight && !c.isCamera && !c.isMesh && c.visible && c.children.length);   // terreno, rasantes, calle, monte
+  for (const g of [o.root, o.roofs, ...extra]) for (const c of g.children){
     if (c === o.roofs || c === o.people || c === o.labels || c.userData.noBatch) continue;
     if (g === o.roofs && c.isGroup && !c.userData.stg) continue;                       // grupos que dependen de "personas"
     c.traverse(n => { if (n.isMesh && !n.isInstancedMesh && !n.isSkinnedMesh && n.geometry?.attributes?.position && n.geometry.attributes.normal) cand.push({ n, g, top:c }); }); }
@@ -2355,7 +2356,7 @@ function v10Lotes(o){
   const lotes = new Map(), inv = new THREE.Matrix4(), mm = new THREE.Matrix4(), nm = new THREE.Matrix3(), v = new THREE.Vector3();
   for (let i = 0; i < cand.length; i++){ const k = cand[i], n = k.n; if (vivos.has(k.top) || !f0[i].v) continue;
     const mats = Array.isArray(n.material) ? n.material : [n.material];
-    if (mats.some(m => !m || m.transparent || m.alphaTest > 0 || m.isMeshBasicMaterial || m.wireframe)) continue;
+    if (mats.some(m => !m || !m.isMeshStandardMaterial || m.wireframe)) continue;
     const geo = n.geometry, P = geo.attributes.position, N = geo.attributes.normal, U = geo.attributes.uv, I = geo.index;
     const total = I ? I.count : P.count; const grupos = Array.isArray(n.material) && geo.groups.length ? geo.groups : [{ start:0, count:total, materialIndex:0 }];
     inv.copy(k.g.matrixWorld).invert(); mm.multiplyMatrices(inv, n.matrixWorld); nm.getNormalMatrix(mm); const flip = mm.determinant() < 0;
@@ -2382,7 +2383,9 @@ function syncBatch(){ if (!BATCH) return; const want = !state.tl && BATCH.groups
   for (const n of BATCH.items) n.layers.set(want ? 1 : 0); for (const c of BATCH.groups) c.visible = want; renderer.shadowMap.needsUpdate = true; }
 function syncLights(){ const o = cur; if (!o) return; const tope = quality === 'ligera' ? 8 : quality === 'media' ? 16 : 99;
   const act = o.nightL.filter(([l]) => l.intensity > 1e-3).sort((a, b) => b[1] - a[1]);
-  o.nightL.forEach(([l]) => l.visible = false); act.slice(0, tope).forEach(([l]) => l.visible = true); }
+  o.nightL.forEach(([l]) => l.visible = false); act.slice(0, tope).forEach(([l]) => l.visible = true);
+  const ps = !(MOVIL || quality === 'ligera');                                           // en celular las personas no proyectan sombra
+  if (o._ps !== ps){ o._ps = ps; o.people.traverse(n => { if (n.isMesh){ if (n.userData.cs0 === undefined) n.userData.cs0 = n.castShadow; n.castShadow = ps && n.userData.cs0; } }); renderer.shadowMap.needsUpdate = true; } }
 var SHN = 0, LOOPN = 0, FT = { t:0, n:0, acc:0, salto:90, subio:0 };
 function shadowTick(){ if (FT === undefined) return; const bajo = MOVIL || quality === 'ligera';
   if (!bajo){ renderer.shadowMap.autoUpdate = true; return; }
