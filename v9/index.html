@@ -464,7 +464,7 @@ VISOR.modulo = {
       const z0 = Math.min(zPd(cl.a[1]), zPd(cl.b[1])); quad(root, cl.a, cl.b, z0, z0 + NV.padelMallaLat, M.malla); seg(root, cl.a, cl.b, z0 + NV.padelMallaLat - .04, z0 + NV.padelMallaLat, .05, M.black, false);
       addPost(cl.a, NV.padelMallaLat); addPost(cl.b, NV.padelMallaLat); continue;
     }
-    const divisoria = !cl.hor && mx > 35 && mx < 70;   // cercos interiores entre canchas: una sola hilada de block al piso y el resto malla
+    const divisoria = true;   // cercos de las canchas sobre la plancha (todos los que no son la barda perimetral): una sola hilada de block al piso y el resto malla
     const zb = Math.min(zPl(Math.min(cl.a[1], cl.b[1])), zPl(my)), Hm = zb + (divisoria ? .20 : NV.murete), H = zb + (cl.hor ? NV.rejaFondo : NV.rejaLat);
     seg(root, cl.a, cl.b, zb - .1, Hm, .15, M.block);
     quad(root, cl.a, cl.b, Hm, H, M.malla);
