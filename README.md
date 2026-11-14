@@ -10,3 +10,4 @@ Visor 3D y timelapse constructivo del anteproyecto.
 - v5 (niveles definitivos: estacionamiento y calle a +11.40/+11.25, franja social +11.55, rampa a las canchas, balance de tierras con paquete de 0.25 m): https://ingarmandotirado.github.io/anteproyecto-canchas-mazatlan/v5/
 - v6 (opción B: franjas de 5.00 m entre canchas, salón 16.59 m con marcos rígidos, pádel con red alineada a tenis y bancas de doble vista): https://ingarmandotirado.github.io/anteproyecto-canchas-mazatlan/v6/
 - v7 (versión final 07-nov-2026: módulo social, gimnasio unido y snacks de block; mezzanine N+3.05, terrazas N+2.95): https://ingarmandotirado.github.io/anteproyecto-canchas-mazatlan/v7/
+- v9 (plano final 13-nov-2026: edificio simétrico al eje del salón, baños de Mujeres entre salón y snacks, snack con almacén deportivo y TVs, terraza oriente N+2.95, porche corrido libre): https://ingarmandotirado.github.io/anteproyecto-canchas-mazatlan/v9/
